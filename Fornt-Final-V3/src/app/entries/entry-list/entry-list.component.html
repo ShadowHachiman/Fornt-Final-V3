@@ -1,0 +1,74 @@
+<div class="container mt-4">
+  <h2 class="fw-semibold text-center mb-4">📘 Libro Diario</h2>
+
+  <!-- Filtros -->
+  <form class="row g-3 mb-4 justify-content-center" (ngSubmit)="loadEntries()">
+    <div class="col-md-3">
+      <input
+        type="date"
+        class="form-control"
+        [(ngModel)]="from"
+        name="from"
+        placeholder="Desde"
+      />
+    </div>
+    <div class="col-md-3">
+      <input
+        type="date"
+        class="form-control"
+        [(ngModel)]="to"
+        name="to"
+        placeholder="Hasta"
+      />
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-primary w-100" type="submit">
+        <i class="bi bi-search"></i> Filtrar
+      </button>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btn-success w-100" type="button" (click)="newEntry()">
+        <i class="bi bi-plus-circle"></i> Nuevo Asiento
+      </button>
+    </div>
+  </form>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <!-- Tabla -->
+  <table *ngIf="!loading && entries.length > 0" class="table table-hover shadow-sm align-middle">
+    <thead class="table-dark">
+    <tr>
+      <th>#</th>
+      <th>Fecha</th>
+      <th>Descripción</th>
+      <th>Total Débito</th>
+      <th>Total Crédito</th>
+      <th class="text-center">Acciones</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let e of entries; let i = index">
+      <td>{{ i + 1 }}</td>
+      <td>{{ e.date | date:'yyyy-MM-dd' }}</td>
+      <td>{{ e.description }}</td>
+      <td>{{ e.totalDebit | number:'1.2-2' }}</td>
+      <td>{{ e.totalCredit | number:'1.2-2' }}</td>
+      <td class="text-center">
+        <button class="btn btn-outline-info btn-sm" (click)="viewDetail(e.id!)">
+          <i class="bi bi-eye"></i> Ver
+        </button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+  <p *ngIf="!loading && entries.length === 0" class="text-center text-muted">
+    No se encontraron asientos contables.
+  </p>
+
+  <p *ngIf="error" class="text-danger text-center mt-3">{{ error }}</p>
+</div>

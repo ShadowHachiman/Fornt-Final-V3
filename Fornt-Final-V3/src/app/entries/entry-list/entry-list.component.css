@@ -1,0 +1,12 @@
+table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+.btn {
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}

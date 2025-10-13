@@ -1,0 +1,110 @@
+<div class="container mt-4">
+  <h2 class="fw-semibold text-center mb-4">🧾 Nuevo Asiento Contable</h2>
+
+  <form (ngSubmit)="onSubmit()" #form="ngForm">
+    <div class="mb-3">
+      <label class="form-label">Fecha</label>
+      <input type="date" class="form-control" [(ngModel)]="entry.date" name="date" required />
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label">Descripción</label>
+      <input
+        type="text"
+        class="form-control"
+        [(ngModel)]="entry.description"
+        name="description"
+        placeholder="Ejemplo: Pago de sueldos"
+        required
+      />
+    </div>
+
+    <hr />
+
+    <div class="table-responsive">
+      <table class="table align-middle table-striped">
+        <thead class="table-dark">
+        <tr>
+          <th>Cuenta</th>
+          <th>Débito</th>
+          <th>Crédito</th>
+          <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let d of entry.details; let i = index">
+          <td>
+            <select class="form-select" [(ngModel)]="d.account" name="account{{ i }}" required>
+              <option value="">Seleccione cuenta</option>
+              <option *ngFor="let a of accounts" [ngValue]="a">{{ a.code }} - {{ a.name }}</option>
+            </select>
+          </td>
+          <td>
+            <input
+              type="number"
+              step="0.01"
+              class="form-control text-end"
+              [(ngModel)]="d.debit"
+              name="debit{{ i }}"
+              (input)="d.credit = 0"
+            />
+          </td>
+          <td>
+            <input
+              type="number"
+              step="0.01"
+              class="form-control text-end"
+              [(ngModel)]="d.credit"
+              name="credit{{ i }}"
+              (input)="d.debit = 0"
+            />
+          </td>
+          <td class="text-center">
+            <button type="button" class="btn btn-sm btn-danger" (click)="removeDetail(i)">
+              <i class="bi bi-trash"></i>
+            </button>
+          </td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="d-flex justify-content-between mt-3">
+      <button type="button" class="btn btn-outline-primary" (click)="addDetail()">
+        <i class="bi bi-plus-circle"></i> Agregar Línea
+      </button>
+
+      <div class="text-end">
+        <p class="mb-1"><strong>Total Débito:</strong> {{ totalDebit | number:'1.2-2' }}</p>
+        <p class="mb-1"><strong>Total Crédito:</strong> {{ totalCredit | number:'1.2-2' }}</p>
+        <p
+          [class.text-success]="isBalanced()"
+          [class.text-danger]="!isBalanced()"
+          class="fw-bold"
+        >
+          {{ isBalanced() ? '✔ Balanceado' : '❌ No balanceado' }}
+        </p>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <button
+        type="submit"
+        class="btn btn-success px-4 me-2"
+        [disabled]="loading || !form.valid"
+      >
+        <i class="bi bi-save"></i> Guardar
+      </button>
+
+      <button
+        type="button"
+        class="btn btn-outline-secondary px-4"
+        (click)="cancel()"
+      >
+        <i class="bi bi-x-circle"></i> Cancelar
+      </button>
+    </div>
+
+    <p *ngIf="error" class="text-danger text-center mt-3">{{ error }}</p>
+  </form>
+</div>

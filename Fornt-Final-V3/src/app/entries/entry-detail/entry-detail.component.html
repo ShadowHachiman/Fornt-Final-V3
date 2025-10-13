@@ -1,0 +1,57 @@
+<div class="container mt-4">
+  <h2 class="fw-semibold text-center mb-4">📄 Detalle del Asiento Contable</h2>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <!-- Error -->
+  <p *ngIf="error" class="text-danger text-center">{{ error }}</p>
+
+  <!-- Contenido -->
+  <div *ngIf="!loading && entry" class="card shadow-sm">
+    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+      <h5 class="mb-0">Asiento N° {{ entry.id }}</h5>
+      <span>{{ entry.date | date: 'yyyy-MM-dd' }}</span>
+    </div>
+
+    <div class="card-body">
+      <p><strong>Descripción:</strong> {{ entry.description }}</p>
+
+      <div class="table-responsive">
+        <table class="table table-striped align-middle">
+          <thead class="table-dark">
+          <tr>
+            <th>Cuenta</th>
+            <th>Nombre</th>
+            <th class="text-end">Débito</th>
+            <th class="text-end">Crédito</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let d of entry.details">
+            <td>{{ d.account?.code }}</td>
+            <td>{{ d.account?.name }}</td>
+            <td class="text-end">{{ d.debit | number: '1.2-2' }}</td>
+            <td class="text-end">{{ d.credit | number: '1.2-2' }}</td>
+          </tr>
+          </tbody>
+          <tfoot class="fw-bold">
+          <tr>
+            <td colspan="2" class="text-end">Totales</td>
+            <td class="text-end">{{ totalDebit | number: '1.2-2' }}</td>
+            <td class="text-end">{{ totalCredit | number: '1.2-2' }}</td>
+          </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-footer text-center">
+      <button class="btn btn-outline-secondary" (click)="back()">
+        <i class="bi bi-arrow-left"></i> Volver
+      </button>
+    </div>
+  </div>
+</div>

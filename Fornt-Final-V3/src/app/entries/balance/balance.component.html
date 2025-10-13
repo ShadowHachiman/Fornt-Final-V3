@@ -1,0 +1,82 @@
+<div class="container mt-4">
+  <h2 class="fw-semibold text-center mb-4">📊 Balance General</h2>
+
+  <!-- Spinner -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <!-- Contenido -->
+  <div *ngIf="!loading && !error" class="row g-4">
+    <!-- Activo -->
+    <div class="col-md-4">
+      <div class="card border-success shadow-sm">
+        <div class="card-header bg-success text-white fw-bold">Activo</div>
+        <ul class="list-group list-group-flush">
+          <ng-container *ngFor="let a of accounts">
+            <li
+              *ngIf="a.typeAccount === 'ASSET' && a.isImputable"
+              class="list-group-item"
+            >
+              {{ a.name }}
+              <span class="float-end fw-semibold">
+                {{ a.balance || 0 | number: '1.2-2' }}
+              </span>
+            </li>
+          </ng-container>
+        </ul>
+        <div class="card-footer text-end fw-bold">
+          Total: {{ totalActivo | number: '1.2-2' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Pasivo -->
+    <div class="col-md-4">
+      <div class="card border-danger shadow-sm">
+        <div class="card-header bg-danger text-white fw-bold">Pasivo</div>
+        <ul class="list-group list-group-flush">
+          <ng-container *ngFor="let a of accounts">
+            <li
+              *ngIf="a.typeAccount === 'LIABILITY' && a.isImputable"
+              class="list-group-item"
+            >
+              {{ a.name }}
+              <span class="float-end fw-semibold">
+                {{ a.balance || 0 | number: '1.2-2' }}
+              </span>
+            </li>
+          </ng-container>
+        </ul>
+        <div class="card-footer text-end fw-bold">
+          Total: {{ totalPasivo | number: '1.2-2' }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Patrimonio -->
+    <div class="col-md-4">
+      <div class="card border-primary shadow-sm">
+        <div class="card-header bg-primary text-white fw-bold">Patrimonio Neto</div>
+        <ul class="list-group list-group-flush">
+          <ng-container *ngFor="let a of accounts">
+            <li
+              *ngIf="a.typeAccount === 'EQUITY' && a.isImputable"
+              class="list-group-item"
+            >
+              {{ a.name }}
+              <span class="float-end fw-semibold">
+                {{ a.balance || 0 | number: '1.2-2' }}
+              </span>
+            </li>
+          </ng-container>
+        </ul>
+        <div class="card-footer text-end fw-bold">
+          Total: {{ totalPatrimonio | number: '1.2-2' }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="alert alert-danger mt-4 text-center">{{ error }}</div>
+</div>

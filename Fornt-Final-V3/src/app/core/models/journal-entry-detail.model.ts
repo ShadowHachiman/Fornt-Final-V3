@@ -1,11 +1,9 @@
-// src/app/core/models/journal-entry-detail.model.ts
+import { Account } from './account.model';
 
 export interface JournalEntryDetail {
-  id?: number; // Opcional, si es nuevo
-  accountId: number; // ID de la cuenta imputable
-  accountCode: string; // Código de la cuenta (para display)
-  accountName: string; // Nombre de la cuenta (para display)
-  description: string; // Descripción de la línea
-  debit: number; // Monto en el Debe
-  credit: number; // Monto en el Haber
+  id?: number;
+  accountId?: number;
+  account?: Account; // Para mostrar código y nombre en el front
+  debit: number;
+  credit: number;
 }

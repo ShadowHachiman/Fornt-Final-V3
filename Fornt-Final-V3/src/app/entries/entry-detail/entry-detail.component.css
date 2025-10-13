@@ -1,0 +1,8 @@
+table {
+  border-radius: 0.5rem;
+  overflow: hidden;
+}
+
+tfoot {
+  background-color: #f8f9fa;
+}
