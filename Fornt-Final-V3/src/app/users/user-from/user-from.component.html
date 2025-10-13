@@ -1,1 +1,81 @@
-<p>user-from works!</p>
+<div class="container mt-5">
+  <div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+      <h4 class="mb-0"><i class="bi bi-person-plus"></i> Create User</h4>
+    </div>
+
+    <div class="card-body">
+      <form (ngSubmit)="onSubmit()" #form="ngForm">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input
+            type="text"
+            class="form-control"
+            name="username"
+            [(ngModel)]="user.username"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input
+            type="email"
+            class="form-control"
+            name="email"
+            [(ngModel)]="user.email"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input
+            type="password"
+            class="form-control"
+            name="password"
+            [(ngModel)]="user.password"
+            required
+          />
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">Role</label>
+          <select
+            class="form-select"
+            name="role"
+            [(ngModel)]="user.role"
+            required
+          >
+            <option value="USER">User</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
+
+        <div class="text-center mt-4">
+          <button
+            class="btn btn-success px-4 me-2"
+            type="submit"
+            [disabled]="loading || !form.valid"
+          >
+            <i class="bi bi-check-circle"></i> Save
+          </button>
+
+          <button
+            class="btn btn-outline-secondary px-4"
+            type="button"
+            (click)="cancel()"
+          >
+            <i class="bi bi-x-circle"></i> Cancel
+          </button>
+        </div>
+      </form>
+
+      <!-- Mensajes -->
+      <p *ngIf="error" class="alert alert-danger text-center mt-3">{{ error }}</p>
+      <p *ngIf="successMessage" class="alert alert-success text-center mt-3">
+        {{ successMessage }}
+      </p>
+    </div>
+  </div>
+</div>
