@@ -17,6 +17,7 @@ export class DashboardComponent implements OnInit {
   activeAccounts: number = 0;
   totalUsers: number = 0;
   loading: boolean = true;
+  userRole: string = '';
 
   constructor(
     private auth: AuthService,
@@ -32,6 +33,11 @@ export class DashboardComponent implements OnInit {
   logout(): void {
     this.auth.logout();
     this.router.navigate(['/login']);
+  }
+
+  /** 🔒 Verifica si el usuario logueado es ADMIN */
+  isAdmin(): boolean {
+    return this.auth.isAdmin();
   }
 
   private loadDashboardData(): void {

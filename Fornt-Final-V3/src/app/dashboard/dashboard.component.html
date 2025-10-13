@@ -1,4 +1,4 @@
-<!-- Navbar superior -->
+<!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container-fluid">
     <a class="navbar-brand fw-bold" href="#">Sistema Contable</a>
@@ -6,6 +6,10 @@
     <div class="d-flex align-items-center">
       <span class="text-light me-3">
         {{ user ? '👤 ' + user.username : '' }}
+        <!-- Badge de rol -->
+        <span *ngIf="userRole" class="badge bg-secondary ms-2">
+          {{ userRole }}
+        </span>
       </span>
       <button class="btn btn-outline-danger btn-sm" (click)="logout()">
         <i class="bi bi-box-arrow-right"></i> Cerrar sesión
@@ -14,10 +18,13 @@
   </div>
 </nav>
 
-<!-- Contenido del Dashboard -->
+<!-- Contenido -->
 <div class="dashboard-container" *ngIf="!loading; else loadingTpl">
   <div class="welcome text-center mb-4">
-    <h2>Bienvenido{{ user ? ', ' + user.username : '' }} 👋</h2>
+    <h2>
+      Bienvenido{{ user ? ', ' + user.username : '' }}
+      <span *ngIf="userRole">({{ userRole }})</span> 👋
+    </h2>
     <p class="text-muted">Resumen general del sistema contable</p>
   </div>
 
@@ -49,9 +56,29 @@
       </div>
     </div>
   </div>
+
+  <!-- 🔗 Sección de navegación -->
+  <div class="mt-5 text-center">
+    <h4 class="fw-semibold mb-3">Cuentas Contables</h4>
+
+    <!-- Visible para todos -->
+    <a routerLink="/accounts/tree" class="btn btn-outline-primary me-3">
+      <i class="bi bi-diagram-3"></i> Ver Plan de Cuentas
+    </a>
+
+    <!-- 🔒 Solo visible para ADMIN -->
+    <a *ngIf="isAdmin()" routerLink="/accounts/manage" class="btn btn-outline-success me-3">
+      <i class="bi bi-pencil-square"></i> Administrar Cuentas
+    </a>
+
+    <!-- 🔒 Solo ADMIN -->
+    <a *ngIf="isAdmin()" routerLink="/users" class="btn btn-outline-dark">
+      <i class="bi bi-people"></i> Gestionar Usuarios
+    </a>
+  </div>
 </div>
 
-<!-- Loading -->
+<!-- Loading Spinner -->
 <ng-template #loadingTpl>
   <div class="d-flex justify-content-center align-items-center" style="height: 60vh;">
     <div class="spinner-border text-primary" role="status">

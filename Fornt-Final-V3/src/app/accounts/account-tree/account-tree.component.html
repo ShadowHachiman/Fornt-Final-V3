@@ -1,1 +1,39 @@
-<p>account-tree works!</p>
+<div class="container mt-4">
+  <div class="d-flex justify-content-start mb-3">
+    <a routerLink="/dashboard" class="btn btn-outline-secondary">
+      <i class="bi bi-arrow-left"></i> Volver al Dashboard
+    </a>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-primary text-white">
+      <h5 class="mb-0">Account Tree</h5>
+    </div>
+    <div class="card-body">
+      <ng-container *ngIf="!loading; else loadingTpl">
+        <ul class="list-group">
+          <li *ngFor="let acc of accounts" class="list-group-item">
+            <strong>{{ acc.code }}</strong> - {{ acc.name }}
+            <span *ngIf="acc.children?.length" class="badge bg-info ms-2">
+              {{ acc.children?.length }} subaccounts
+            </span>
+
+            <ul *ngIf="acc.children?.length" class="list-group mt-2 ms-3">
+              <li *ngFor="let child of acc.children" class="list-group-item">
+                <strong>{{ child.code }}</strong> - {{ child.name }}
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </ng-container>
+
+      <ng-template #loadingTpl>
+        <div class="d-flex justify-content-center my-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>

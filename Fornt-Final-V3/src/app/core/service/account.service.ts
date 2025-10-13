@@ -13,24 +13,23 @@ export class AccountService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtiene todas las cuentas disponibles (ADMIN o USER)
-   */
+  /** Obtiene todas las cuentas */
   getAllAccounts(): Observable<Account[]> {
     return this.http.get<Account[]>(this.apiUrl);
   }
 
-  /**
-   * Obtiene el árbol jerárquico de cuentas
-   */
+  /** Obtiene el árbol jerárquico de cuentas */
   getAccountTree(): Observable<Account[]> {
     return this.http.get<Account[]>(`${this.apiUrl}/tree`);
   }
 
-  /**
-   * Busca cuentas por texto (nombre o código)
-   */
+  /** Busca cuentas por texto (nombre o código) */
   searchAccounts(searchTerm: string): Observable<Account[]> {
     return this.http.get<Account[]>(`${this.apiUrl}?search=${searchTerm}`);
+  }
+
+  /** Crea una nueva cuenta (solo ADMIN) */
+  createAccount(account: Account): Observable<Account> {
+    return this.http.post<Account>(this.apiUrl, account);
   }
 }
