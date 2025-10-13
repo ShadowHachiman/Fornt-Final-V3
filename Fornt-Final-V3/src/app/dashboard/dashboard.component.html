@@ -1,1 +1,61 @@
-<p>dashboard works!</p>
+<!-- Navbar superior -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+  <div class="container-fluid">
+    <a class="navbar-brand fw-bold" href="#">Sistema Contable</a>
+
+    <div class="d-flex align-items-center">
+      <span class="text-light me-3">
+        {{ user ? '👤 ' + user.username : '' }}
+      </span>
+      <button class="btn btn-outline-danger btn-sm" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+      </button>
+    </div>
+  </div>
+</nav>
+
+<!-- Contenido del Dashboard -->
+<div class="dashboard-container" *ngIf="!loading; else loadingTpl">
+  <div class="welcome text-center mb-4">
+    <h2>Bienvenido{{ user ? ', ' + user.username : '' }} 👋</h2>
+    <p class="text-muted">Resumen general del sistema contable</p>
+  </div>
+
+  <div class="row g-4 justify-content-center">
+    <div class="col-md-4">
+      <div class="card text-bg-primary shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Total de cuentas</h5>
+          <p class="display-6 fw-bold">{{ totalAccounts }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-bg-success shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Cuentas activas</h5>
+          <p class="display-6 fw-bold">{{ activeAccounts }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-bg-warning shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Usuarios registrados</h5>
+          <p class="display-6 fw-bold">{{ totalUsers }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading -->
+<ng-template #loadingTpl>
+  <div class="d-flex justify-content-center align-items-center" style="height: 60vh;">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+  </div>
+</ng-template>
