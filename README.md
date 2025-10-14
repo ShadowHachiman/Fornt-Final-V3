@@ -1,6 +1,3 @@
-Perfect 🔥 Here’s a professional and well-structured **README.md** you can use for your GitHub repository
-👉 `Fornt-Final-V3` — fully written in **English**, with badges, usage instructions, and setup details for your Angular accounting system.
-
 ---
 
 ```markdown
