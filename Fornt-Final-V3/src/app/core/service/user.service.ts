@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -12,9 +12,37 @@ export class UserService {
 
   constructor(private http: HttpClient, private auth: AuthService) {}
 
-  /** 👤 Obtener el usuario autenticado */
+  /** 👤 Obtener el usuario autenticado usando el token guardado */
   getCurrentUser(): Observable<User> {
-    return this.http.get<User>(`${this.apiUrl}/me`);
+    const token = this.auth.getToken();
+
+    if (!token) {
+      console.warn('⚠️ No hay token guardado, devolviendo usuario vacío');
+      return of({
+        id: 0,
+        username: '',
+        email: '',
+        role: 'USER', // ✅ tipo literal permitido
+        active: false
+      } as User);
+    }
+
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+
+    return this.http
+      .get<User>(`${this.apiUrl}/me`, { headers })
+      .pipe(
+        catchError((err) => {
+          console.error('❌ Error obteniendo el usuario autenticado:', err);
+          return of({
+            id: 0,
+            username: '',
+            email: '',
+            role: 'USER', // ✅ se mantiene consistente con el modelo
+            active: false
+          } as User);
+        })
+      );
   }
 
   /** 👥 Listar todos los usuarios (solo ADMIN) */
