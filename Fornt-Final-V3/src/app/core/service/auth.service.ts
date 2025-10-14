@@ -14,41 +14,50 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
+  /** ✅ Detecta si estamos en el navegador */
+  private isBrowser(): boolean {
+    return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+  }
+
   /** 🔐 Login: guarda token y roles */
   login(username: string, password: string): Observable<AuthUser> {
     return this.http
       .post<{ token: string; roles: string[] }>(`${this.apiUrl}/login`, { username, password })
       .pipe(
         tap((res) => {
-          const expiration = new Date(Date.now() + 3600 * 1000); // 1 hora
-          localStorage.setItem(this.tokenKey, res.token);
-          localStorage.setItem(this.rolesKey, JSON.stringify(res.roles || []));
-          localStorage.setItem(this.expiresKey, expiration.toISOString());
+          if (this.isBrowser()) {
+            const expiration = new Date(Date.now() + 3600 * 1000); // 1 hora
+            localStorage.setItem(this.tokenKey, res.token);
+            localStorage.setItem(this.rolesKey, JSON.stringify(res.roles || []));
+            localStorage.setItem(this.expiresKey, expiration.toISOString());
+          }
         }),
         map((res) => ({
           user: {
-            id: 0, //id temporal hasta que venga el real desde /users/me
+            id: 0, // temporal hasta que venga desde /users/me
             username,
             email: '',
             role: res.roles.includes('ADMIN') ? 'ADMIN' : 'USER',
-            active: true
+            active: true,
           },
           token: {
             token: res.token,
             expiresAt: new Date(Date.now() + 3600 * 1000),
-            roles: res.roles
-          }
+            roles: res.roles,
+          },
         }))
       );
   }
 
   /** 🧾 Devuelve el token actual */
   getToken(): string | null {
+    if (!this.isBrowser()) return null;
     return localStorage.getItem(this.tokenKey);
   }
 
   /** 📆 Verifica si el token está vencido */
   isTokenExpired(): boolean {
+    if (!this.isBrowser()) return true;
     const expiration = localStorage.getItem(this.expiresKey);
     if (!expiration) return true;
     return new Date() > new Date(expiration);
@@ -60,16 +69,18 @@ export class AuthService {
       this.logout();
       return of(null);
     }
-    // (en el futuro, podés implementar un endpoint /auth/refresh)
+    if (!this.isBrowser()) return of(null);
+
     return of({
       token: this.getToken()!,
       expiresAt: new Date(localStorage.getItem(this.expiresKey)!),
-      roles: this.getRoles()
+      roles: this.getRoles(),
     });
   }
 
   /** 🧠 Devuelve los roles almacenados */
   getRoles(): string[] {
+    if (!this.isBrowser()) return [];
     const roles = localStorage.getItem(this.rolesKey);
     return roles ? JSON.parse(roles) : [];
   }
@@ -81,11 +92,13 @@ export class AuthService {
 
   /** ⚙️ Verifica si hay sesión válida */
   isAuthenticated(): boolean {
+    if (!this.isBrowser()) return false;
     return !!this.getToken() && !this.isTokenExpired();
   }
 
   /** 🚪 Logout */
   logout(): void {
+    if (!this.isBrowser()) return;
     localStorage.removeItem(this.tokenKey);
     localStorage.removeItem(this.rolesKey);
     localStorage.removeItem(this.expiresKey);
