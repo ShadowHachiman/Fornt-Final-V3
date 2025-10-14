@@ -39,14 +39,14 @@ It provides features for user management, chart of accounts, journal entries, ge
 
 src/
 ├── app/
-│   ├── accounts/        # Account management & tree view
-│   ├── core/            # Guards, models, and services
-│   ├── entries/         # Journal entries, ledger, and balance
-│   ├── login/           # Authentication
-│   ├── users/           # User management module
-│   ├── dashboard/       # Main dashboard and summary
-│   └── app.routes.ts    # Application routing
-└── assets/              # Static resources
+│ ├── accounts/ # Account management & tree view
+│ ├── core/ # Guards, models, and services
+│ ├── entries/ # Journal entries, ledger, and balance
+│ ├── login/ # Authentication
+│ ├── users/ # User management module
+│ ├── dashboard/ # Main dashboard and summary
+│ └── app.routes.ts # Application routing
+└── assets/ # Static resources
 
 ````
 
