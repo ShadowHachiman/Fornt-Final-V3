@@ -1,7 +1,7 @@
 <div class="container mt-4">
   <div class="d-flex justify-content-start mb-3">
     <a routerLink="/dashboard" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> Volver al Dashboard
+      <i class="bi bi-arrow-left"></i> Back to Dashboard
     </a>
   </div>
 
@@ -9,18 +9,30 @@
     <div class="card-header bg-primary text-white">
       <h5 class="mb-0">Account Tree</h5>
     </div>
+
     <div class="card-body">
       <ng-container *ngIf="!loading; else loadingTpl">
         <ul class="list-group">
           <li *ngFor="let acc of accounts" class="list-group-item">
             <strong>{{ acc.code }}</strong> - {{ acc.name }}
-            <span *ngIf="acc.children?.length" class="badge bg-info ms-2">
-              {{ acc.children?.length }} subaccounts
+            <span *ngIf="acc.children && acc.children.length > 0" class="badge bg-info ms-2">
+              {{ acc.children.length }} subaccounts
             </span>
 
-            <ul *ngIf="acc.children?.length" class="list-group mt-2 ms-3">
+            <!-- Recursive subaccounts -->
+            <ul *ngIf="acc.children && acc.children.length > 0" class="list-group mt-2 ms-3">
               <li *ngFor="let child of acc.children" class="list-group-item">
                 <strong>{{ child.code }}</strong> - {{ child.name }}
+                <span *ngIf="child.children && child.children.length > 0" class="badge bg-info ms-2">
+                  {{ child.children.length }} subaccounts
+                </span>
+
+                <!-- Third level if exists -->
+                <ul *ngIf="child.children && child.children.length > 0" class="list-group mt-2 ms-3">
+                  <li *ngFor="let sub of child.children" class="list-group-item">
+                    <strong>{{ sub.code }}</strong> - {{ sub.name }}
+                  </li>
+                </ul>
               </li>
             </ul>
           </li>

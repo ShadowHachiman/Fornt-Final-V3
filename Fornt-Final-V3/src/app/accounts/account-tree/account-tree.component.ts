@@ -12,18 +12,27 @@ import { Account } from '../../core/models/account.model';
 })
 export class AccountTreeComponent implements OnInit {
   accounts: Account[] = [];
-  loading = true;
+  loading = false;
+  error = '';
 
   constructor(private accountService: AccountService) {}
 
   ngOnInit(): void {
-    this.accountService.getAccountTree().subscribe({
-      next: (data: Account[]) => {
-        this.accounts = data;
+    this.loadAccounts();
+  }
+
+  private loadAccounts(): void {
+    this.loading = true;
+    this.accountService.getAllAccounts().subscribe({
+      next: (data) => {
+        this.accounts = data.map(acc => ({
+          ...acc,
+          children: acc.children ?? []
+        }));
         this.loading = false;
       },
       error: () => {
-        console.error('Error fetching account tree');
+        this.error = 'Error cargando cuentas';
         this.loading = false;
       }
     });
