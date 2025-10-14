@@ -1,5 +1,3 @@
----
-
 ```markdown
 # 🧾 Accounting System – Angular Frontend
 
