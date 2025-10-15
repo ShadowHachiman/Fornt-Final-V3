@@ -22,12 +22,12 @@ export class AuthService {
   /** 🔐 Login: guarda token y roles */
   login(username: string, password: string): Observable<AuthUser> {
     return this.http
-      .post<{ token: string; roles: string[] }>(`${this.apiUrl}/login`, { username, password })
+      .post<{ username: string; roles: string[]; accessToken: string; expiresIn: number }>(`${this.apiUrl}/login`, { username, password })
       .pipe(
         tap((res) => {
           if (this.isBrowser()) {
-            const expiration = new Date(Date.now() + 3600 * 1000); // 1 hora
-            localStorage.setItem(this.tokenKey, res.token);
+            const expiration = new Date(Date.now() + (res.expiresIn * 1000)); // expiresIn viene en segundos
+            localStorage.setItem(this.tokenKey, res.accessToken);
             localStorage.setItem(this.rolesKey, JSON.stringify(res.roles || []));
             localStorage.setItem(this.expiresKey, expiration.toISOString());
           }
@@ -35,14 +35,14 @@ export class AuthService {
         map((res) => ({
           user: {
             id: 0, // temporal hasta que venga desde /users/me
-            username,
+            username: res.username,
             email: '',
-            role: res.roles.includes('ADMIN') ? 'ADMIN' : 'USER',
+            role: res.roles.some(r => r.includes('ADMIN')) ? 'ADMIN' : 'USER',
             active: true,
           },
           token: {
-            token: res.token,
-            expiresAt: new Date(Date.now() + 3600 * 1000),
+            token: res.accessToken,
+            expiresAt: new Date(Date.now() + (res.expiresIn * 1000)),
             roles: res.roles,
           },
         }))
@@ -87,7 +87,8 @@ export class AuthService {
 
   /** 👑 Verifica si el usuario es ADMIN */
   isAdmin(): boolean {
-    return this.getRoles().includes('ADMIN');
+    const roles = this.getRoles();
+    return roles.includes('ADMIN') || roles.includes('ROLE_ADMIN');
   }
 
   /** ⚙️ Verifica si hay sesión válida */

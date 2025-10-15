@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { JournalEntryService } from '../../core/service/journal-entry.service';
 import { AccountService } from '../../core/service/account.service';
 import { Account } from '../../core/models/account.model';
-import { LedgerDetail } from '../../core/models/ledger-detail.model';
+import { LedgerDetail, LedgerResponse } from '../../core/models/ledger-detail.model';
 
 @Component({
   selector: 'app-ledger',
@@ -15,14 +15,18 @@ import { LedgerDetail } from '../../core/models/ledger-detail.model';
 })
 export class LedgerComponent implements OnInit {
   accounts: Account[] = [];
-  ledger: LedgerDetail[] = [];
+  ledgerResponse?: LedgerResponse;
 
-  selectedAccountId?: number;
+  selectedAccountCode?: string;
   from = '';
   to = '';
 
   loading = false;
   error = '';
+
+  get ledger(): LedgerDetail[] {
+    return this.ledgerResponse?.movements || [];
+  }
 
   constructor(
     private accountService: AccountService,
@@ -36,14 +40,18 @@ export class LedgerComponent implements OnInit {
   /** 🔹 Carga las cuentas disponibles */
   loadAccounts(): void {
     this.accountService.getAllAccounts().subscribe({
-      next: (data) => (this.accounts = data),
-      error: () => (this.error = 'Error cargando cuentas')
+      next: (data) => {
+        this.accounts = data;
+      },
+      error: () => {
+        this.error = 'Error cargando cuentas';
+      }
     });
   }
 
   /** 🔹 Consulta el libro mayor filtrado */
   loadLedger(): void {
-    if (!this.selectedAccountId) {
+    if (!this.selectedAccountCode) {
       this.error = 'Debe seleccionar una cuenta';
       return;
     }
@@ -51,32 +59,38 @@ export class LedgerComponent implements OnInit {
     this.loading = true;
     this.error = '';
 
-    // ✅ Convertimos a string por compatibilidad con el servicio
-    this.entryService.getLedger(this.selectedAccountId.toString(), this.from, this.to).subscribe({
+    // ✅ Enviamos el código de la cuenta
+    this.entryService.getLedger(this.selectedAccountCode, this.from, this.to).subscribe({
       next: (data) => {
-        this.ledger = data;
+        this.ledgerResponse = data;
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Error cargando libro mayor';
+      error: (err) => {
+        console.error('Error cargando libro mayor:', err);
+        this.error = err.message || 'Error cargando libro mayor';
         this.loading = false;
       }
     });
   }
 
-  /** 🔸 Total de débitos */
+  /** 🔸 Total de débitos (desde el backend) */
   get totalDebit(): number {
-    return this.ledger.reduce((sum, d) => sum + (d.debit || 0), 0);
+    return this.ledgerResponse?.totalDebits || 0;
   }
 
-  /** 🔸 Total de créditos */
+  /** 🔸 Total de créditos (desde el backend) */
   get totalCredit(): number {
-    return this.ledger.reduce((sum, d) => sum + (d.credit || 0), 0);
+    return this.ledgerResponse?.totalCredits || 0;
   }
 
-  /** 🔸 Balance final */
+  /** 🔸 Balance final (desde el backend) */
   get balance(): number {
-    return this.totalDebit - this.totalCredit;
+    return this.ledgerResponse?.closingBalance || 0;
+  }
+
+  /** 🔸 Saldo de apertura */
+  get openingBalance(): number {
+    return this.ledgerResponse?.openingBalance || 0;
   }
 
   getPartialBalance(index: number): number {

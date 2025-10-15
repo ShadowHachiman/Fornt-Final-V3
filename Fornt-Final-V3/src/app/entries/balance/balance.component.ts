@@ -1,60 +1,79 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { AccountService } from '../../core/service/account.service';
-import { Account } from '../../core/models/account.model';
+import { FormsModule } from '@angular/forms';
+import { BalanceService } from '../../core/service/balance.service';
+import { BalanceReport } from '../../core/models/balance-report.model';
 
 @Component({
   selector: 'app-balance',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './balance.component.html',
   styleUrls: ['./balance.component.css']
 })
 export class BalanceComponent implements OnInit {
-  accounts: Account[] = [];
-  loading = true;
+  balanceReport?: BalanceReport;
+  asOf: string = new Date().toISOString().substring(0, 10);
+  loading = false;
   error = '';
 
-  totalActivo = 0;
-  totalPasivo = 0;
-  totalPatrimonio = 0;
-
-  constructor(private accountService: AccountService) {}
+  constructor(private balanceService: BalanceService) {}
 
   ngOnInit(): void {
-    this.loadAccounts();
+    this.loadBalance();
   }
 
-  loadAccounts(): void {
-    this.accountService.getAllAccounts().subscribe({
+  loadBalance(): void {
+    if (!this.asOf) {
+      this.error = 'Debe seleccionar una fecha';
+      return;
+    }
+
+    this.loading = true;
+    this.error = '';
+
+    this.balanceService.getBalanceAsOf(this.asOf).subscribe({
       next: (data) => {
-        this.accounts = data;
-        this.calculateTotals();
+        this.balanceReport = data;
         this.loading = false;
       },
-      error: () => {
-        this.error = 'Error cargando cuentas';
+      error: (err) => {
+        console.error('Error cargando balance:', err);
+        this.error = err.message || 'Error cargando balance';
         this.loading = false;
       }
     });
   }
 
-  /** 🔹 Cálculo de totales según tipo y si es imputable */
-  calculateTotals(): void {
-    this.totalActivo = this.accounts
-      .filter(a => a.typeAccount === 'ASSET' && a.isImputable)
-      .reduce((sum, a) => sum + (a['balance'] || 0), 0);
-
-    this.totalPasivo = this.accounts
-      .filter(a => a.typeAccount === 'LIABILITY' && a.isImputable)
-      .reduce((sum, a) => sum + (a['balance'] || 0), 0);
-
-    this.totalPatrimonio = this.accounts
-      .filter(a => a.typeAccount === 'EQUITY' && a.isImputable)
-      .reduce((sum, a) => sum + (a['balance'] || 0), 0);
+  get totalActivo(): number {
+    return this.balanceReport?.assets || 0;
   }
 
-  get totalGeneral(): number {
-    return this.totalActivo - (this.totalPasivo + this.totalPatrimonio);
+  get totalPasivo(): number {
+    return this.balanceReport?.liabilities || 0;
+  }
+
+  get totalPatrimonio(): number {
+    return this.balanceReport?.equity || 0;
+  }
+
+  get totalIngresos(): number {
+    return this.balanceReport?.income || 0;
+  }
+
+  get totalEgresos(): number {
+    return this.balanceReport?.expense || 0;
+  }
+
+  get resultado(): number {
+    return this.balanceReport?.result || 0;
+  }
+
+  get isBalanced(): boolean {
+    return this.balanceReport?.balanced || false;
+  }
+
+  get difference(): number {
+    return this.balanceReport?.difference || 0;
   }
 }

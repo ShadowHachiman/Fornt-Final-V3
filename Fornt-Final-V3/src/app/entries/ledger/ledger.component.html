@@ -7,12 +7,12 @@
       <label class="form-label">Cuenta</label>
       <select
         class="form-select"
-        [(ngModel)]="selectedAccountId"
+        [(ngModel)]="selectedAccountCode"
         name="account"
         required
       >
-        <option [ngValue]="null">Seleccione una cuenta</option>
-        <option *ngFor="let a of accounts" [ngValue]="a.id">
+        <option [ngValue]="undefined">Seleccione una cuenta</option>
+        <option *ngFor="let a of accounts" [ngValue]="a.code">
           {{ a.code }} - {{ a.name }}
         </option>
       </select>
@@ -40,6 +40,20 @@
     <div class="spinner-border text-primary" role="status"></div>
   </div>
 
+  <!-- 🔹 Información de la cuenta -->
+  <div *ngIf="!loading && ledgerResponse" class="alert alert-info mb-3">
+    <h5 class="mb-2">📊 {{ ledgerResponse.accountCode }} - {{ ledgerResponse.accountName }}</h5>
+    <p class="mb-1">
+      <strong>Período:</strong> {{ ledgerResponse.from | date: 'dd/MM/yyyy' }} - {{ ledgerResponse.to | date: 'dd/MM/yyyy' }}
+    </p>
+    <p class="mb-0">
+      <strong>Saldo de Apertura:</strong>
+      <span [class.text-success]="openingBalance >= 0" [class.text-danger]="openingBalance < 0">
+        {{ openingBalance | number: '1.2-2' }}
+      </span>
+    </p>
+  </div>
+
   <!-- 🔹 Tabla -->
   <div *ngIf="!loading && ledger && ledger.length > 0" class="table-responsive">
     <table class="table table-striped align-middle shadow-sm">
@@ -56,15 +70,15 @@
 
       <tbody>
       <tr *ngFor="let d of ledger; let i = index">
-        <td>{{ d.date | date: 'yyyy-MM-dd' }}</td>
+        <td>{{ d.date | date: 'dd/MM/yyyy' }}</td>
         <td>#{{ d.entryId }}</td>
         <td>{{ d.description }}</td>
         <td class="text-end">{{ d.debit || 0 | number: '1.2-2' }}</td>
         <td class="text-end">{{ d.credit || 0 | number: '1.2-2' }}</td>
         <td
           class="text-end fw-semibold"
-          [class.text-success]="balance >= 0"
-          [class.text-danger]="balance < 0"
+          [class.text-success]="getPartialBalance(i) >= 0"
+          [class.text-danger]="getPartialBalance(i) < 0"
         >
           {{ getPartialBalance(i) | number: '1.2-2' }}
         </td>
@@ -90,7 +104,7 @@
 
   <!-- 🔹 Mensajes -->
   <p
-    *ngIf="!loading && ledger?.length === 0 && !error"
+    *ngIf="!loading && ledgerResponse && ledger?.length === 0 && !error"
     class="text-center text-muted mt-4"
   >
     No hay movimientos para los filtros seleccionados.

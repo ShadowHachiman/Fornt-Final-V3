@@ -23,13 +23,23 @@ export class AccountService {
     return this.http.get<Account[]>(`${this.apiUrl}/tree`);
   }
 
-  /** Busca cuentas por texto (nombre o código) */
+  /** Busca cuentas por nombre */
+  searchAccountsByName(name: string): Observable<Account[]> {
+    return this.http.get<Account[]>(`${this.apiUrl}?name=${name}`);
+  }
+
+  /** Busca cuentas por código */
+  searchAccountsByCode(code: string): Observable<Account[]> {
+    return this.http.get<Account[]>(`${this.apiUrl}?code=${code}`);
+  }
+
+  /** Busca cuentas por texto general (nombre o código) */
   searchAccounts(searchTerm: string): Observable<Account[]> {
     return this.http.get<Account[]>(`${this.apiUrl}?search=${searchTerm}`);
   }
 
   /** Crea una nueva cuenta (solo ADMIN) */
-  createAccount(account: Account): Observable<Account> {
+  createAccount(account: Partial<Account> | any): Observable<Account> {
     return this.http.post<Account>(this.apiUrl, account);
   }
 }
