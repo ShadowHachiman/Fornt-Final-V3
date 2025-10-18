@@ -1,51 +1,146 @@
 <div class="container mt-4">
-  <div class="d-flex justify-content-start mb-3">
-    <a routerLink="/dashboard" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> Back to Dashboard
-    </a>
+  <h2 class="fw-semibold text-center mb-4">🌳 Plan de Cuentas</h2>
+
+  <!-- Barra de búsqueda y acciones -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-6">
+          <div class="input-group">
+            <span class="input-group-text">🔍</span>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="searchTerm"
+              (input)="onSearch()"
+              placeholder="Buscar por código o nombre..."
+            />
+            <button
+              *ngIf="searchTerm"
+              class="btn btn-outline-secondary"
+              (click)="clearSearch()"
+              type="button"
+            >
+              ✖️
+            </button>
+          </div>
+        </div>
+        <div class="col-md-6 text-end mt-2 mt-md-0">
+          <a routerLink="/accounts/manage" class="btn btn-sm btn-success me-2">
+            ➕ Crear Cuenta
+          </a>
+          <button class="btn btn-sm btn-outline-primary me-2" (click)="expandAll()">
+            📂 Expandir Todo
+          </button>
+          <button class="btn btn-sm btn-outline-secondary" (click)="collapseAll()">
+            📁 Colapsar Todo
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="card shadow-sm">
-    <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">Account Tree</h5>
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando...</span>
     </div>
+  </div>
 
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Árbol de cuentas -->
+  <div *ngIf="!loading && !error" class="card shadow-sm">
     <div class="card-body">
-      <ng-container *ngIf="!loading; else loadingTpl">
-        <ul class="list-group">
-          <li *ngFor="let acc of accounts" class="list-group-item">
-            <strong>{{ acc.code }}</strong> - {{ acc.name }}
-            <span *ngIf="acc.children && acc.children.length > 0" class="badge bg-info ms-2">
-              {{ acc.children.length }} subaccounts
-            </span>
-
-            <!-- Recursive subaccounts -->
-            <ul *ngIf="acc.children && acc.children.length > 0" class="list-group mt-2 ms-3">
-              <li *ngFor="let child of acc.children" class="list-group-item">
-                <strong>{{ child.code }}</strong> - {{ child.name }}
-                <span *ngIf="child.children && child.children.length > 0" class="badge bg-info ms-2">
-                  {{ child.children.length }} subaccounts
-                </span>
-
-                <!-- Third level if exists -->
-                <ul *ngIf="child.children && child.children.length > 0" class="list-group mt-2 ms-3">
-                  <li *ngFor="let sub of child.children" class="list-group-item">
-                    <strong>{{ sub.code }}</strong> - {{ sub.name }}
-                  </li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-        </ul>
+      <ng-container *ngIf="filteredAccounts.length > 0; else noResults">
+        <ng-container *ngTemplateOutlet="accountNode; context: { accounts: filteredAccounts, level: 0 }"></ng-container>
       </ng-container>
 
-      <ng-template #loadingTpl>
-        <div class="d-flex justify-content-center my-5">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
+      <ng-template #noResults>
+        <div class="text-center py-5 text-muted">
+          <h5>No se encontraron cuentas</h5>
+          <p>Intenta con otros términos de búsqueda</p>
         </div>
       </ng-template>
     </div>
   </div>
+
+  <!-- Leyenda -->
+  <div class="card shadow-sm mt-3">
+    <div class="card-body">
+      <h6 class="fw-bold mb-3">📌 Leyenda:</h6>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="mb-2">
+            <span class="badge bg-success me-2">✅</span> Cuenta Activa
+          </div>
+          <div class="mb-2">
+            <span class="badge bg-secondary me-2">❌</span> Cuenta Inactiva
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-2">
+            <span class="badge bg-info text-dark me-2">📝</span> Imputable (recibe movimientos)
+          </div>
+          <div class="mb-2">
+            <span class="badge bg-warning text-dark me-2">📁</span> Agrupadora (no imputable)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<!-- Template recursivo para el árbol -->
+<ng-template #accountNode let-accounts="accounts" let-level="level">
+  <div *ngFor="let account of accounts" [style.margin-left.px]="level * 20">
+    <div class="account-item d-flex align-items-center py-2 border-bottom">
+      <!-- Botón expandir/colapsar -->
+      <button
+        *ngIf="hasChildren(account)"
+        class="btn btn-sm btn-link p-0 me-2"
+        (click)="toggleNode(account.id)"
+        style="width: 24px"
+      >
+        {{ isExpanded(account.id) ? '▼' : '▶' }}
+      </button>
+      <span *ngIf="!hasChildren(account)" class="me-2" style="width: 24px; display: inline-block"></span>
+
+      <!-- Icono del tipo -->
+      <span class="me-2" [title]="getTypeName(account.type)">
+        {{ getTypeIcon(account.type) }}
+      </span>
+
+      <!-- Código y nombre -->
+      <div class="flex-grow-1">
+        <strong class="me-2">{{ account.code }}</strong>
+        <span [class.text-muted]="!account.active">{{ account.name }}</span>
+      </div>
+
+      <!-- Badges -->
+      <div class="ms-auto d-flex gap-2">
+        <span *ngIf="account.imputable" class="badge bg-info text-dark" title="Imputable">
+          📝
+        </span>
+        <span *ngIf="!account.imputable" class="badge bg-warning text-dark" title="Agrupadora">
+          📁
+        </span>
+        <span *ngIf="account.active" class="badge bg-success" title="Activa">
+          ✅
+        </span>
+        <span *ngIf="!account.active" class="badge bg-secondary" title="Inactiva">
+          ❌
+        </span>
+        <span *ngIf="hasChildren(account)" class="badge bg-primary" [title]="'Tiene ' + account.children!.length + ' subcuentas'">
+          {{ account.children!.length }} 👥
+        </span>
+      </div>
+    </div>
+
+    <!-- Hijos (recursivo) -->
+    <div *ngIf="hasChildren(account) && isExpanded(account.id)">
+      <ng-container *ngTemplateOutlet="accountNode; context: { accounts: account.children, level: level + 1 }"></ng-container>
+    </div>
+  </div>
+</ng-template>

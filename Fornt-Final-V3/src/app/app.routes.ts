@@ -50,8 +50,9 @@ export const routes: Routes = [
   // 📒 Libro Mayor
   { path: 'ledger', component: LedgerComponent, canActivate: [authGuard] },
 
-  // 🚧 Fallback (404)
-  { path: '**', redirectTo: 'login' },
+  // 💰 Balance (solo ADMIN)
   { path: 'balance', component: BalanceComponent, canActivate: [adminGuard] },
 
+  // 🚧 Fallback (404) - SIEMPRE AL FINAL
+  { path: '**', redirectTo: 'login' }
 ];

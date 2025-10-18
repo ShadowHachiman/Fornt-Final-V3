@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { UserService } from '../core/service/user.service';
 import { AccountService } from '../core/service/account.service';
 import { AuthService } from '../core/service/auth.service';
 import { User } from '../core/models/user.model';
 import { Account } from '../core/models/account.model';
-import {CommonModule} from "@angular/common";
+import { CommonModule } from "@angular/common";
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })

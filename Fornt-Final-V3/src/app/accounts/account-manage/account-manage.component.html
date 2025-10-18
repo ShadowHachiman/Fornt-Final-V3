@@ -1,101 +1,129 @@
 <div class="container mt-4">
-  <!-- Botón para volver -->
-  <div class="d-flex justify-content-start mb-3">
-    <a routerLink="/dashboard" class="btn btn-outline-secondary">
-      <i class="bi bi-arrow-left"></i> Volver al Dashboard
-    </a>
-  </div>
+  <h2 class="fw-semibold text-center mb-4">➕ Crear Nueva Cuenta</h2>
 
-  <!-- Tarjeta de administración -->
   <div class="card shadow-sm">
-    <div class="card-header bg-primary text-white">
-      <h5 class="mb-0">Manage Accounts</h5>
-    </div>
-
     <div class="card-body">
       <form [formGroup]="accountForm" (ngSubmit)="onSubmit()">
-        <div class="row g-3">
-          <div class="col-md-4">
-            <label class="form-label fw-semibold">Code</label>
-            <input
-              type="text"
-              formControlName="code"
-              class="form-control"
-              placeholder="Account code"
-              required
-            />
+        <!-- Código -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Código *</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="code"
+            placeholder="Ej: 111, 1101, etc."
+            [class.is-invalid]="codeControl?.invalid && codeControl?.touched"
+          />
+          <div class="invalid-feedback" *ngIf="codeControl?.invalid && codeControl?.touched">
+            <div *ngIf="codeControl?.errors?.['required']">El código es requerido</div>
+            <div *ngIf="codeControl?.errors?.['pattern']">El código debe contener solo números</div>
           </div>
+          <small class="text-muted">Solo números. Ejemplo: 100, 110, 111</small>
+        </div>
 
-          <div class="col-md-8">
-            <label class="form-label fw-semibold">Name</label>
-            <input
-              type="text"
-              formControlName="name"
-              class="form-control"
-              placeholder="Account name"
-              required
-            />
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Type</label>
-            <select formControlName="type" class="form-select">
-              <option value="ASSET">Asset</option>
-              <option value="LIABILITY">Liability</option>
-              <option value="EQUITY">Equity</option>
-              <option value="INCOME">Income</option>
-              <option value="EXPENSE">Expense</option>
-            </select>
-          </div>
-
-          <div class="col-md-6">
-            <label class="form-label fw-semibold">Balance Nature</label>
-            <select formControlName="balanceNature" class="form-select">
-              <option value="DEBIT">Debit</option>
-              <option value="CREDIT">Credit</option>
-            </select>
-          </div>
-
-          <div class="col-md-6">
-            <div class="form-check mt-2">
-              <input
-                type="checkbox"
-                formControlName="imputable"
-                class="form-check-input"
-                id="imputable"
-              />
-              <label class="form-check-label" for="imputable">Imputable</label>
-            </div>
-          </div>
-
-          <div class="col-md-6">
-            <div class="form-check mt-2">
-              <input
-                type="checkbox"
-                formControlName="active"
-                class="form-check-input"
-                id="active"
-              />
-              <label class="form-check-label" for="active">Active</label>
-            </div>
+        <!-- Nombre -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Nombre *</label>
+          <input
+            type="text"
+            class="form-control"
+            formControlName="name"
+            placeholder="Ej: Caja, Banco Nación, etc."
+            [class.is-invalid]="nameControl?.invalid && nameControl?.touched"
+          />
+          <div class="invalid-feedback" *ngIf="nameControl?.invalid && nameControl?.touched">
+            <div *ngIf="nameControl?.errors?.['required']">El nombre es requerido</div>
+            <div *ngIf="nameControl?.errors?.['minlength']">El nombre debe tener al menos 3 caracteres</div>
           </div>
         </div>
 
-        <div class="d-flex justify-content-end mt-4">
-          <button type="submit" class="btn btn-success" [disabled]="loading">
-            <span *ngIf="!loading">Save Account</span>
-            <span *ngIf="loading" class="spinner-border spinner-border-sm"></span>
+        <!-- Tipo -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Tipo *</label>
+          <select class="form-select" formControlName="type">
+            <option *ngFor="let type of accountTypes" [value]="type.value">
+              {{ type.label }}
+            </option>
+          </select>
+          <small class="text-muted">Selecciona el tipo de cuenta contable</small>
+        </div>
+
+        <!-- Cuenta Padre -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">Cuenta Padre (opcional)</label>
+          <select class="form-select" formControlName="parentCode">
+            <option [ngValue]="null">-- Sin cuenta padre (cuenta raíz) --</option>
+            <option *ngFor="let account of parentAccounts" [value]="account.code">
+              {{ account.code }} - {{ account.name }}
+            </option>
+          </select>
+          <small class="text-muted">
+            Solo cuentas <strong>no imputables</strong> pueden ser padres. Deja vacío para crear una cuenta raíz.
+          </small>
+        </div>
+
+        <!-- Imputable -->
+        <div class="mb-3 form-check">
+          <input
+            type="checkbox"
+            class="form-check-input"
+            id="imputable"
+            formControlName="imputable"
+          />
+          <label class="form-check-label" for="imputable">
+            <strong>Cuenta Imputable</strong> (recibe movimientos contables)
+          </label>
+          <div>
+            <small class="text-muted">
+              ⚠️ Las cuentas imputables NO pueden tener subcuentas
+            </small>
+          </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div *ngIf="message" class="alert alert-success">{{ message }}</div>
+        <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+        <!-- Botones -->
+        <div class="text-center mt-4">
+          <button
+            type="submit"
+            class="btn btn-success btn-lg px-5 me-3"
+            [disabled]="loading || accountForm.invalid"
+          >
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            💾 Crear Cuenta
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-lg px-5"
+            (click)="cancel()"
+            [disabled]="loading"
+          >
+            ❌ Cancelar
           </button>
         </div>
       </form>
+    </div>
+  </div>
 
-      <p
-        class="mt-3 fw-semibold text-center"
-        [class.text-success]="message.includes('✅')"
-        [class.text-danger]="message.includes('❌')"
-      >
-        {{ message }}
-      </p>
+  <!-- Ayuda -->
+  <div class="alert alert-info mt-4">
+    <h6 class="fw-bold">💡 Reglas para crear cuentas:</h6>
+    <ul class="mb-0">
+      <li>El <strong>código</strong> debe ser único y solo números</li>
+      <li>Las cuentas <strong>imputables</strong> reciben movimientos (asientos contables)</li>
+      <li>Las cuentas <strong>no imputables</strong> son agrupadoras y pueden tener subcuentas</li>
+      <li>Solo cuentas <strong>no imputables y activas</strong> pueden ser padres</li>
+      <li>Si marcas una cuenta como <strong>imputable</strong>, NO podrá tener hijos</li>
+    </ul>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="loadingAccounts" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">Cargando cuentas...</span>
     </div>
   </div>
 </div>

@@ -1,110 +1,172 @@
 <div class="container mt-4">
-  <h2 class="fw-semibold text-center mb-4">🧾 Nuevo Asiento Contable</h2>
+  <h2 class="fw-semibold text-center mb-4">📝 Nuevo Asiento Contable</h2>
 
-  <form (ngSubmit)="onSubmit()" #form="ngForm">
-    <div class="mb-3">
-      <label class="form-label">Fecha</label>
-      <input type="date" class="form-control" [(ngModel)]="entry.date" name="date" required />
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Descripción</label>
-      <input
-        type="text"
-        class="form-control"
-        [(ngModel)]="entry.description"
-        name="description"
-        placeholder="Ejemplo: Pago de sueldos"
-        required
-      />
-    </div>
-
-    <hr />
-
-    <div class="table-responsive">
-      <table class="table align-middle table-striped">
-        <thead class="table-dark">
-        <tr>
-          <th>Cuenta</th>
-          <th>Débito</th>
-          <th>Crédito</th>
-          <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr *ngFor="let d of entry.details; let i = index">
-          <td>
-            <select class="form-select" [(ngModel)]="d.account" name="account{{ i }}" required>
-              <option value="">Seleccione cuenta</option>
-              <option *ngFor="let a of accounts" [ngValue]="a">{{ a.code }} - {{ a.name }}</option>
-            </select>
-          </td>
-          <td>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <form (ngSubmit)="onSubmit()" #form="ngForm">
+        <!-- Fecha y Descripción -->
+        <div class="row mb-3">
+          <div class="col-md-3">
+            <label class="form-label fw-bold">Fecha *</label>
             <input
-              type="number"
-              step="0.01"
-              class="form-control text-end"
-              [(ngModel)]="d.debit"
-              name="debit{{ i }}"
-              (input)="d.credit = 0"
+              type="date"
+              class="form-control"
+              [(ngModel)]="entry.date"
+              name="date"
+              required
             />
-          </td>
-          <td>
+          </div>
+          <div class="col-md-9">
+            <label class="form-label fw-bold">Descripción *</label>
             <input
-              type="number"
-              step="0.01"
-              class="form-control text-end"
-              [(ngModel)]="d.credit"
-              name="credit{{ i }}"
-              (input)="d.debit = 0"
+              type="text"
+              class="form-control"
+              [(ngModel)]="entry.description"
+              name="description"
+              placeholder="Ej: Venta al contado, Pago de sueldos, etc."
+              required
             />
-          </td>
-          <td class="text-center">
-            <button type="button" class="btn btn-sm btn-danger" (click)="removeDetail(i)">
-              <i class="bi bi-trash"></i>
-            </button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
+          </div>
+        </div>
 
-    <div class="d-flex justify-content-between mt-3">
-      <button type="button" class="btn btn-outline-primary" (click)="addDetail()">
-        <i class="bi bi-plus-circle"></i> Agregar Línea
-      </button>
+        <hr />
 
-      <div class="text-end">
-        <p class="mb-1"><strong>Total Débito:</strong> {{ totalDebit | number:'1.2-2' }}</p>
-        <p class="mb-1"><strong>Total Crédito:</strong> {{ totalCredit | number:'1.2-2' }}</p>
-        <p
-          [class.text-success]="isBalanced()"
-          [class.text-danger]="!isBalanced()"
-          class="fw-bold"
+        <h5 class="mb-3">Líneas del Asiento</h5>
+
+        <!-- Tabla de líneas -->
+        <div class="table-responsive">
+          <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark">
+              <tr>
+                <th style="width: 45%">Cuenta *</th>
+                <th style="width: 20%" class="text-end">Debe</th>
+                <th style="width: 20%" class="text-end">Haber</th>
+                <th style="width: 15%" class="text-center">Acción</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let line of entry.lines; let i = index">
+                <td>
+                  <select
+                    class="form-select"
+                    [(ngModel)]="line.accountCode"
+                    [name]="'account' + i"
+                    required
+                  >
+                    <option value="">-- Seleccione cuenta --</option>
+                    <option *ngFor="let a of imputables" [value]="a.code">
+                      {{ a.code }} - {{ a.name }}
+                    </option>
+                  </select>
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    class="form-control text-end"
+                    [(ngModel)]="line.debit"
+                    [name]="'debit' + i"
+                    (ngModelChange)="onDebitChange(line)"
+                    placeholder="0.00"
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    class="form-control text-end"
+                    [(ngModel)]="line.credit"
+                    [name]="'credit' + i"
+                    (ngModelChange)="onCreditChange(line)"
+                    placeholder="0.00"
+                  />
+                </td>
+                <td class="text-center">
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-danger"
+                    (click)="removeLine(i)"
+                    [disabled]="entry.lines.length <= 1"
+                  >
+                    🗑️ Eliminar
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="table-light fw-bold">
+              <tr>
+                <td class="text-end">Totales:</td>
+                <td class="text-end">{{ totalDebit | number: '1.2-2' }}</td>
+                <td class="text-end">{{ totalCredit | number: '1.2-2' }}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <!-- Botón para agregar línea -->
+        <button
+          type="button"
+          class="btn btn-outline-primary mb-3"
+          (click)="addLine()"
         >
-          {{ isBalanced() ? '✔ Balanceado' : '❌ No balanceado' }}
-        </p>
-      </div>
+          ➕ Agregar Línea
+        </button>
+
+        <!-- Estado del balance -->
+        <div class="alert" [ngClass]="{
+          'alert-success': isBalanced(),
+          'alert-warning': !isBalanced() && (totalDebit > 0 || totalCredit > 0),
+          'alert-secondary': totalDebit === 0 && totalCredit === 0
+        }">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="fw-bold">
+              {{ isBalanced() ? '✅ Asiento balanceado' : '⚠️ Asiento desbalanceado' }}
+            </span>
+            <span>
+              Diferencia: {{ (totalDebit - totalCredit) | number: '1.2-2' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div *ngIf="success" class="alert alert-success">{{ success }}</div>
+        <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+        <!-- Botones de acción -->
+        <div class="text-center mt-4">
+          <button
+            type="submit"
+            class="btn btn-success btn-lg px-5 me-3"
+            [disabled]="loading || !form.valid || !isBalanced()"
+          >
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            💾 Guardar Asiento
+          </button>
+
+          <button
+            type="button"
+            class="btn btn-outline-secondary btn-lg px-5"
+            (click)="cancel()"
+            [disabled]="loading"
+          >
+            ❌ Cancelar
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <div class="text-center mt-4">
-      <button
-        type="submit"
-        class="btn btn-success px-4 me-2"
-        [disabled]="loading || !form.valid"
-      >
-        <i class="bi bi-save"></i> Guardar
-      </button>
-
-      <button
-        type="button"
-        class="btn btn-outline-secondary px-4"
-        (click)="cancel()"
-      >
-        <i class="bi bi-x-circle"></i> Cancelar
-      </button>
-    </div>
-
-    <p *ngIf="error" class="text-danger text-center mt-3">{{ error }}</p>
-  </form>
+  <!-- Ayuda -->
+  <div class="alert alert-info mt-4">
+    <h6 class="fw-bold">💡 Ayuda:</h6>
+    <ul class="mb-0">
+      <li>Solo se muestran cuentas <strong>imputables</strong> y <strong>activas</strong></li>
+      <li>Cada línea debe tener monto en <strong>Debe</strong> o en <strong>Haber</strong>, no en ambos</li>
+      <li>El total de <strong>Debe</strong> debe ser igual al total de <strong>Haber</strong></li>
+      <li>Se requieren al menos <strong>2 líneas</strong> para crear un asiento</li>
+    </ul>
+  </div>
 </div>

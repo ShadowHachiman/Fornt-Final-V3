@@ -1,82 +1,164 @@
 <div class="container mt-4">
-  <h2 class="fw-semibold text-center mb-4">📊 Balance General</h2>
+  <h2 class="fw-semibold text-center mb-4">💰 Balance General</h2>
 
-  <!-- Spinner -->
+  <!-- Selector de fecha -->
+  <div class="card shadow-sm mb-3">
+    <div class="card-body">
+      <div class="row align-items-center">
+        <div class="col-md-4">
+          <label class="form-label fw-bold">Fecha de Corte</label>
+          <input
+            type="date"
+            class="form-control"
+            [(ngModel)]="asOf"
+            name="asOf"
+          />
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button
+            class="btn btn-primary w-100"
+            (click)="loadBalance()"
+            [disabled]="loading"
+          >
+            <span *ngIf="loading" class="spinner-border spinner-border-sm me-2"></span>
+            🔍 Consultar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading -->
   <div *ngIf="loading" class="text-center py-5">
     <div class="spinner-border text-primary" role="status"></div>
   </div>
 
-  <!-- Contenido -->
-  <div *ngIf="!loading && !error" class="row g-4">
+  <!-- Error -->
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Balance -->
+  <div *ngIf="!loading && balanceReport" class="row g-4">
     <!-- Activo -->
     <div class="col-md-4">
-      <div class="card border-success shadow-sm">
-        <div class="card-header bg-success text-white fw-bold">Activo</div>
-        <ul class="list-group list-group-flush">
-          <ng-container *ngFor="let a of accounts">
-            <li
-              *ngIf="a.typeAccount === 'ASSET' && a.isImputable"
-              class="list-group-item"
-            >
-              {{ a.name }}
-              <span class="float-end fw-semibold">
-                {{ a.balance || 0 | number: '1.2-2' }}
-              </span>
-            </li>
-          </ng-container>
-        </ul>
-        <div class="card-footer text-end fw-bold">
-          Total: {{ totalActivo | number: '1.2-2' }}
+      <div class="card border-success shadow-sm h-100">
+        <div class="card-header bg-success text-white fw-bold">
+          💰 Activo
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+          <h3 class="display-4 fw-bold text-success mb-0">
+            {{ totalActivo | number: '1.2-2' }}
+          </h3>
         </div>
       </div>
     </div>
 
     <!-- Pasivo -->
     <div class="col-md-4">
-      <div class="card border-danger shadow-sm">
-        <div class="card-header bg-danger text-white fw-bold">Pasivo</div>
-        <ul class="list-group list-group-flush">
-          <ng-container *ngFor="let a of accounts">
-            <li
-              *ngIf="a.typeAccount === 'LIABILITY' && a.isImputable"
-              class="list-group-item"
-            >
-              {{ a.name }}
-              <span class="float-end fw-semibold">
-                {{ a.balance || 0 | number: '1.2-2' }}
-              </span>
-            </li>
-          </ng-container>
-        </ul>
-        <div class="card-footer text-end fw-bold">
-          Total: {{ totalPasivo | number: '1.2-2' }}
+      <div class="card border-danger shadow-sm h-100">
+        <div class="card-header bg-danger text-white fw-bold">
+          📋 Pasivo
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+          <h3 class="display-4 fw-bold text-danger mb-0">
+            {{ totalPasivo | number: '1.2-2' }}
+          </h3>
         </div>
       </div>
     </div>
 
-    <!-- Patrimonio -->
+    <!-- Patrimonio Neto -->
     <div class="col-md-4">
-      <div class="card border-primary shadow-sm">
-        <div class="card-header bg-primary text-white fw-bold">Patrimonio Neto</div>
-        <ul class="list-group list-group-flush">
-          <ng-container *ngFor="let a of accounts">
-            <li
-              *ngIf="a.typeAccount === 'EQUITY' && a.isImputable"
-              class="list-group-item"
-            >
-              {{ a.name }}
-              <span class="float-end fw-semibold">
-                {{ a.balance || 0 | number: '1.2-2' }}
-              </span>
-            </li>
-          </ng-container>
-        </ul>
-        <div class="card-footer text-end fw-bold">
-          Total: {{ totalPatrimonio | number: '1.2-2' }}
+      <div class="card border-primary shadow-sm h-100">
+        <div class="card-header bg-primary text-white fw-bold">
+          🏛️ Patrimonio Neto
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+          <h3 class="display-4 fw-bold text-primary mb-0">
+            {{ totalPatrimonio | number: '1.2-2' }}
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ingresos -->
+    <div class="col-md-4">
+      <div class="card border-info shadow-sm h-100">
+        <div class="card-header bg-info text-white fw-bold">
+          💵 Ingresos
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+          <h3 class="display-4 fw-bold text-info mb-0">
+            {{ totalIngresos | number: '1.2-2' }}
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Egresos -->
+    <div class="col-md-4">
+      <div class="card border-warning shadow-sm h-100">
+        <div class="card-header bg-warning text-dark fw-bold">
+          💸 Egresos
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+          <h3 class="display-4 fw-bold text-warning mb-0">
+            {{ totalEgresos | number: '1.2-2' }}
+          </h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado -->
+    <div class="col-md-4">
+      <div class="card shadow-sm h-100" [class.border-success]="resultado >= 0" [class.border-danger]="resultado < 0">
+        <div class="card-header fw-bold" [class.bg-success]="resultado >= 0" [class.bg-danger]="resultado < 0" [class.text-white]="true">
+          📊 Resultado del Período
+        </div>
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+          <h3 class="display-4 fw-bold mb-0" [class.text-success]="resultado >= 0" [class.text-danger]="resultado < 0">
+            {{ resultado | number: '1.2-2' }}
+          </h3>
+          <small class="text-muted mt-2">{{ resultado >= 0 ? 'Ganancia' : 'Pérdida' }}</small>
         </div>
       </div>
     </div>
   </div>
 
-  <div *ngIf="error" class="alert alert-danger mt-4 text-center">{{ error }}</div>
+  <!-- Estado del Balance -->
+  <div *ngIf="!loading && balanceReport" class="alert mt-4" [class.alert-success]="isBalanced" [class.alert-warning]="!isBalanced">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <strong>{{ isBalanced ? '✅ Balance Cuadrado' : '⚠️ Balance Descuadrado' }}</strong>
+      </div>
+      <div *ngIf="!isBalanced">
+        Diferencia: <strong>{{ difference | number: '1.2-2' }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- Información adicional -->
+  <div *ngIf="!loading && balanceReport" class="card shadow-sm mt-4">
+    <div class="card-header bg-dark text-white">
+      📌 Información del Balance
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p class="mb-2"><strong>Fecha de corte:</strong> {{ balanceReport.asOf | date: 'dd/MM/yyyy' }}</p>
+          <p class="mb-2"><strong>Ecuación contable:</strong></p>
+          <p class="ms-3 mb-0">
+            Activo = Pasivo + Patrimonio<br/>
+            {{ totalActivo | number: '1.2-2' }} = {{ totalPasivo | number: '1.2-2' }} + {{ totalPatrimonio | number: '1.2-2' }}
+          </p>
+        </div>
+        <div class="col-md-6">
+          <p class="mb-2"><strong>Resultado:</strong></p>
+          <p class="ms-3 mb-0">
+            Ingresos - Egresos = Resultado<br/>
+            {{ totalIngresos | number: '1.2-2' }} - {{ totalEgresos | number: '1.2-2' }} = {{ resultado | number: '1.2-2' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

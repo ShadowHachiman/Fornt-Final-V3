@@ -1,19 +1,61 @@
 <!-- Navbar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
   <div class="container-fluid">
-    <a class="navbar-brand fw-bold" href="#">Sistema Contable</a>
+    <a class="navbar-brand fw-bold" routerLink="/dashboard">📊 Sistema Contable</a>
 
-    <div class="d-flex align-items-center">
-      <span class="text-light me-3">
-        {{ user ? '👤 ' + user.username : '' }}
-        <!-- Badge de rol -->
-        <span *ngIf="userRole" class="badge bg-secondary ms-2">
-          {{ userRole }}
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            🏠 Inicio
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/accounts/tree" routerLinkActive="active">
+            🌳 Plan de Cuentas
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin()">
+          <a class="nav-link" routerLink="/accounts/manage" routerLinkActive="active">
+            ⚙️ Gestionar Cuentas
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/ledger" routerLinkActive="active">
+            📒 Libro Mayor
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin()">
+          <a class="nav-link" routerLink="/entries/new" routerLinkActive="active">
+            ➕ Nuevo Asiento
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin()">
+          <a class="nav-link" routerLink="/balance" routerLinkActive="active">
+            💰 Balance
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin()">
+          <a class="nav-link" routerLink="/users" routerLinkActive="active">
+            👥 Usuarios
+          </a>
+        </li>
+      </ul>
+
+      <div class="d-flex align-items-center">
+        <span class="text-light me-3">
+          👤 {{ user ? user.username : '' }}
+          <span *ngIf="isAdmin()" class="badge bg-warning text-dark ms-2">ADMIN</span>
+          <span *ngIf="!isAdmin()" class="badge bg-secondary ms-2">USER</span>
         </span>
-      </span>
-      <button class="btn btn-outline-danger btn-sm" (click)="logout()">
-        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
-      </button>
+        <button class="btn btn-outline-danger btn-sm" (click)="logout()">
+          🚪 Cerrar sesión
+        </button>
+      </div>
     </div>
   </div>
 </nav>
@@ -58,23 +100,50 @@
   </div>
 
   <!-- 🔗 Sección de navegación -->
-  <div class="mt-5 text-center">
-    <h4 class="fw-semibold mb-3">Cuentas Contables</h4>
+  <div class="mt-5">
+    <h4 class="fw-semibold mb-3 text-center">Accesos Rápidos</h4>
 
-    <!-- Visible para todos -->
-    <a routerLink="/accounts/tree" class="btn btn-outline-primary me-3">
-      <i class="bi bi-diagram-3"></i> Ver Plan de Cuentas
-    </a>
+    <div class="row g-3">
+      <!-- Columna izquierda: Cuentas -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-primary text-white">
+            <h6 class="mb-0">💼 Cuentas Contables</h6>
+          </div>
+          <div class="card-body">
+            <a routerLink="/accounts/tree" class="btn btn-outline-primary w-100 mb-2">
+              🌳 Ver Plan de Cuentas
+            </a>
+            <a *ngIf="isAdmin()" routerLink="/accounts/manage" class="btn btn-success w-100">
+              ➕ Crear Nueva Cuenta
+            </a>
+          </div>
+        </div>
+      </div>
 
-    <!-- 🔒 Solo visible para ADMIN -->
-    <a *ngIf="isAdmin()" routerLink="/accounts/manage" class="btn btn-outline-success me-3">
-      <i class="bi bi-pencil-square"></i> Administrar Cuentas
-    </a>
-
-    <!-- 🔒 Solo ADMIN -->
-    <a *ngIf="isAdmin()" routerLink="/users" class="btn btn-outline-dark">
-      <i class="bi bi-people"></i> Gestionar Usuarios
-    </a>
+      <!-- Columna derecha: Asientos y más -->
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white">
+            <h6 class="mb-0">📝 Operaciones</h6>
+          </div>
+          <div class="card-body">
+            <a *ngIf="isAdmin()" routerLink="/entries/new" class="btn btn-outline-success w-100 mb-2">
+              ➕ Nuevo Asiento Contable
+            </a>
+            <a routerLink="/ledger" class="btn btn-outline-primary w-100 mb-2">
+              📒 Libro Mayor
+            </a>
+            <a *ngIf="isAdmin()" routerLink="/balance" class="btn btn-outline-info w-100 mb-2">
+              💰 Balance General
+            </a>
+            <a *ngIf="isAdmin()" routerLink="/users" class="btn btn-outline-dark w-100">
+              👥 Gestionar Usuarios
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 

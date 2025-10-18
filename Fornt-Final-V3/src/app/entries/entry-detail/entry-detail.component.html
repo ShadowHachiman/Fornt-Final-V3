@@ -30,11 +30,11 @@
           </tr>
           </thead>
           <tbody>
-          <tr *ngFor="let d of entry.details">
-            <td>{{ d.account?.code }}</td>
-            <td>{{ d.account?.name }}</td>
-            <td class="text-end">{{ d.debit | number: '1.2-2' }}</td>
-            <td class="text-end">{{ d.credit | number: '1.2-2' }}</td>
+          <tr *ngFor="let line of entry.lines">
+            <td>{{ line.accountCode }}</td>
+            <td>{{ line.accountCode }}</td>
+            <td class="text-end">{{ line.debit | number: '1.2-2' }}</td>
+            <td class="text-end">{{ line.credit | number: '1.2-2' }}</td>
           </tr>
           </tbody>
           <tfoot class="fw-bold">

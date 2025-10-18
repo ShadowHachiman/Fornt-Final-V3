@@ -44,11 +44,11 @@ export class EntryDetailComponent implements OnInit {
   }
 
   get totalDebit(): number {
-    return (this.entry?.details ?? []).reduce((sum: number, d: any) => sum + (d.debit || 0), 0);
+    return (this.entry?.lines ?? []).reduce((sum: number, d: any) => sum + (d.debit || 0), 0);
   }
 
   get totalCredit(): number {
-    return (this.entry?.details ?? []).reduce((sum: number, d: any) => sum + (d.credit || 0), 0);
+    return (this.entry?.lines ?? []).reduce((sum: number, d: any) => sum + (d.credit || 0), 0);
   }
 
 
