@@ -17,9 +17,10 @@ export class UserFormComponent {
     username: '',
     email: '',
     password: '',
-    role: 'USER'
+    roles: ['USER']
   };
 
+  selectedRole: string = 'USER';
   error = '';
   successMessage = '';
   loading = false;
@@ -30,15 +31,28 @@ export class UserFormComponent {
     this.loading = true;
     this.error = '';
     this.successMessage = '';
+
+    // Asegurar que roles sea un array con el rol seleccionado
+    this.user.roles = [this.selectedRole];
+
     this.userService.createUser(this.user).subscribe({
       next: () => {
         this.loading = false;
-        this.successMessage = '✅ User created successfully!';
-        setTimeout(() => this.router.navigate(['/users']), 2000); // 🔁 redirige tras 2s
+        this.successMessage = 'User created successfully!';
+        setTimeout(() => this.router.navigate(['/users']), 2000);
       },
-      error: () => {
+      error: (err) => {
         this.loading = false;
-        this.error = 'Error creating user. Please try again.';
+        console.error('Error creating user:', err);
+        if (err.error?.message) {
+          this.error = err.error.message;
+        } else if (err.error?.error) {
+          this.error = err.error.error;
+        } else if (err.message) {
+          this.error = err.message;
+        } else {
+          this.error = 'Error creating user. Please try again.';
+        }
       }
     });
   }

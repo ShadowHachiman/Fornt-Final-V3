@@ -12,5 +12,5 @@ export interface UserCreationDTO {
   username: string;
   password?: string; // Solo requerido en la creación o cambio de clave
   email: string;
-  role: 'USER' | 'ADMIN';
+  roles: string[]; // Backend espera un array de roles
 }
