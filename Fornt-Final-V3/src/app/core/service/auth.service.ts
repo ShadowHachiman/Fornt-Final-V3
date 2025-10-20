@@ -1,4 +1,5 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { map, tap } from 'rxjs/operators';
@@ -12,11 +13,14 @@ export class AuthService {
   private readonly rolesKey = 'user_roles';
   private readonly expiresKey = 'token_expiration';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object
+  ) {}
 
-  /** ✅ Detecta si estamos en el navegador */
+  /** ✅ Detecta si estamos en el navegador usando el patrón oficial de Angular */
   private isBrowser(): boolean {
-    return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
+    return isPlatformBrowser(this.platformId);
   }
 
   /** 🔐 Login: guarda token y roles */
@@ -28,20 +32,20 @@ export class AuthService {
       )
       .pipe(
         tap((res) => {
-          console.log('🧾 Respuesta del backend de login:', res);
-
-          if (this.isBrowser()) {
-            const expiration = new Date(Date.now() + (res.expiresIn * 1000)); // expiresIn viene en segundos
-
-            // ✅ Normalizamos los roles para quitar el prefijo "ROLE_" y uniformar a mayúsculas
-            const normalizedRoles = (res.roles || []).map(r =>
-              r.replace(/^ROLE_/, '').toUpperCase()
-            );
-
-            localStorage.setItem(this.tokenKey, res.accessToken);
-            localStorage.setItem(this.rolesKey, JSON.stringify(normalizedRoles));
-            localStorage.setItem(this.expiresKey, expiration.toISOString());
+          if (!this.isBrowser() || !res.accessToken) {
+            return;
           }
+
+          const expiration = new Date(Date.now() + (res.expiresIn * 1000)); // expiresIn viene en segundos
+
+          // ✅ Normalizamos los roles para quitar el prefijo "ROLE_" y uniformar a mayúsculas
+          const normalizedRoles = (res.roles || []).map(r =>
+            r.replace(/^ROLE_/, '').toUpperCase()
+          );
+
+          localStorage.setItem(this.tokenKey, res.accessToken);
+          localStorage.setItem(this.rolesKey, JSON.stringify(normalizedRoles));
+          localStorage.setItem(this.expiresKey, expiration.toISOString());
         }),
         map((res) => {
           // También usamos los roles normalizados aquí

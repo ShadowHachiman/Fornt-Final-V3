@@ -46,25 +46,43 @@ export class DashboardComponent implements OnInit {
   private loadDashboardData(): void {
     this.loading = true;
 
+    // 👤 Obtener usuario actual (disponible para todos los usuarios autenticados)
     this.userService.getCurrentUser().subscribe({
       next: (user) => (this.user = user),
       error: () => console.error('Error al obtener usuario actual')
     });
 
+    // 📊 Cargar cuentas (disponible para todos los usuarios autenticados)
     this.accountService.getAllAccounts().subscribe({
       next: (accounts: Account[]) => {
         this.totalAccounts = accounts.length;
         this.activeAccounts = accounts.filter((a) => a.active).length;
+
+        // Si no es admin, terminamos la carga aquí
+        if (!this.isAdmin()) {
+          this.loading = false;
+        }
       },
-      error: () => console.error('Error al obtener cuentas')
+      error: () => {
+        console.error('Error al obtener cuentas');
+        if (!this.isAdmin()) {
+          this.loading = false;
+        }
+      }
     });
 
-    this.userService.getAllUsers().subscribe({
-      next: (users: User[]) => {
-        this.totalUsers = users.length;
-        this.loading = false;
-      },
-      error: () => console.error('Error al obtener usuarios')
-    });
+    // 👥 Solo cargar usuarios si es ADMIN
+    if (this.isAdmin()) {
+      this.userService.getAllUsers().subscribe({
+        next: (users: User[]) => {
+          this.totalUsers = users.length;
+          this.loading = false;
+        },
+        error: () => {
+          console.error('Error al obtener usuarios');
+          this.loading = false;
+        }
+      });
+    }
   }
 }

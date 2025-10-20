@@ -29,18 +29,19 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
 
         case 401: // Unauthorized - Token inválido o expirado
+          // Si es 401, el token realmente es inválido/expirado → logout
           errorMessage = 'Sesión expirada. Por favor inicie sesión nuevamente.';
-          console.error('🔒 Unauthorized:', error.message);
+          console.error('🔒 Unauthorized - token inválido:', error.message);
           authService.logout();
-          router.navigate(['/auth/login'], {
+          router.navigate(['/login'], {
             queryParams: { returnUrl: router.url }
           });
           break;
 
         case 403: // Forbidden - Sin permisos
           errorMessage = 'No tiene permisos para realizar esta acción.';
-          console.error('🚫 Forbidden:', error.message);
-          router.navigate(['/dashboard']);
+          console.warn('🚫 Forbidden:', error.message, '- URL:', req.url);
+          // NO redirigir automáticamente - dejar que el componente maneje el error
           break;
 
         case 404: // Not Found
