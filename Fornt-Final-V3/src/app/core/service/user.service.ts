@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { User, UserCreationDTO } from '../models/user.model';
 import { AuthService } from './auth.service';
@@ -30,8 +29,7 @@ export class UserService {
 
   /** 🔄 Activar/Desactivar usuario */
   toggleUserStatus(id: number, active: boolean): Observable<User> {
-    return this.http
-      .patch<User>(`${this.apiUrl}/${id}/status`, { active })
-      .pipe(catchError(() => of({} as User)));
+    console.log('UserService.toggleUserStatus called:', { id, active, url: `${this.apiUrl}/${id}/status` });
+    return this.http.patch<User>(`${this.apiUrl}/${id}/status`, { active });
   }
 }

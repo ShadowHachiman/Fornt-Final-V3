@@ -25,11 +25,17 @@ export class AuthService {
       .post<{ username: string; roles: string[]; accessToken: string; expiresIn: number }>(`${this.apiUrl}/login`, { username, password })
       .pipe(
         tap((res) => {
+          console.log('Login response:', { username: res.username, roles: res.roles, hasToken: !!res.accessToken });
           if (this.isBrowser()) {
             const expiration = new Date(Date.now() + (res.expiresIn * 1000)); // expiresIn viene en segundos
             localStorage.setItem(this.tokenKey, res.accessToken);
             localStorage.setItem(this.rolesKey, JSON.stringify(res.roles || []));
             localStorage.setItem(this.expiresKey, expiration.toISOString());
+            console.log('Saved to localStorage:', {
+              token: res.accessToken.substring(0, 20) + '...',
+              roles: res.roles,
+              expiration: expiration.toISOString()
+            });
           }
         }),
         map((res) => ({
@@ -81,8 +87,10 @@ export class AuthService {
   /** 🧠 Devuelve los roles almacenados */
   getRoles(): string[] {
     if (!this.isBrowser()) return [];
-    const roles = localStorage.getItem(this.rolesKey);
-    return roles ? JSON.parse(roles) : [];
+    const rolesString = localStorage.getItem(this.rolesKey);
+    const roles = rolesString ? JSON.parse(rolesString) : [];
+    console.log('getRoles() called:', { rolesString, roles });
+    return roles;
   }
 
   /** 👑 Verifica si el usuario es ADMIN */
