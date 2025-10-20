@@ -11,6 +11,7 @@ import { LedgerComponent } from './entries/ledger/ledger.component';
 import { authGuard } from './core/guard/auth.guard';
 import { adminGuard } from './core/guard/admin.guard';
 import {BalanceComponent} from "./entries/balance/balance.component";
+import {JournalComponent} from "./journal/journal/journal.component";
 
 export const routes: Routes = [
   // 🚪 Default redirection
@@ -52,6 +53,8 @@ export const routes: Routes = [
 
   // 💰 Balance (solo ADMIN)
   { path: 'balance', component: BalanceComponent, canActivate: [adminGuard] },
+
+  { path: 'journal', component: JournalComponent, canActivate: [authGuard] },
 
   // 🚧 Fallback (404) - SIEMPRE AL FINAL
   { path: '**', redirectTo: 'login' }

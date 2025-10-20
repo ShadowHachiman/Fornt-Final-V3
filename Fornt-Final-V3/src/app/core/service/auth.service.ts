@@ -22,30 +22,48 @@ export class AuthService {
   /** 🔐 Login: guarda token y roles */
   login(username: string, password: string): Observable<AuthUser> {
     return this.http
-      .post<{ username: string; roles: string[]; accessToken: string; expiresIn: number }>(`${this.apiUrl}/login`, { username, password })
+      .post<{ username: string; roles: string[]; accessToken: string; expiresIn: number }>(
+        `${this.apiUrl}/login`,
+        { username, password }
+      )
       .pipe(
         tap((res) => {
+          console.log('🧾 Respuesta del backend de login:', res);
+
           if (this.isBrowser()) {
             const expiration = new Date(Date.now() + (res.expiresIn * 1000)); // expiresIn viene en segundos
+
+            // ✅ Normalizamos los roles para quitar el prefijo "ROLE_" y uniformar a mayúsculas
+            const normalizedRoles = (res.roles || []).map(r =>
+              r.replace(/^ROLE_/, '').toUpperCase()
+            );
+
             localStorage.setItem(this.tokenKey, res.accessToken);
-            localStorage.setItem(this.rolesKey, JSON.stringify(res.roles || []));
+            localStorage.setItem(this.rolesKey, JSON.stringify(normalizedRoles));
             localStorage.setItem(this.expiresKey, expiration.toISOString());
           }
         }),
-        map((res) => ({
-          user: {
-            id: 0, // temporal hasta que venga desde /users/me
-            username: res.username,
-            email: '',
-            role: res.roles.some(r => r.includes('ADMIN')) ? 'ADMIN' : 'USER',
-            active: true,
-          },
-          token: {
-            token: res.accessToken,
-            expiresAt: new Date(Date.now() + (res.expiresIn * 1000)),
-            roles: res.roles,
-          },
-        }))
+        map((res) => {
+          // También usamos los roles normalizados aquí
+          const normalizedRoles = (res.roles || []).map(r =>
+            r.replace(/^ROLE_/, '').toUpperCase()
+          );
+
+          return {
+            user: {
+              id: 0, // temporal hasta que venga desde /users/me
+              username: res.username,
+              email: '',
+              role: normalizedRoles.some(r => r.includes('ADMIN')) ? 'ADMIN' : 'USER',
+              active: true,
+            },
+            token: {
+              token: res.accessToken,
+              expiresAt: new Date(Date.now() + (res.expiresIn * 1000)),
+              roles: normalizedRoles,
+            },
+          };
+        })
       );
   }
 
@@ -81,14 +99,38 @@ export class AuthService {
   /** 🧠 Devuelve los roles almacenados */
   getRoles(): string[] {
     if (!this.isBrowser()) return [];
-    const roles = localStorage.getItem(this.rolesKey);
-    return roles ? JSON.parse(roles) : [];
+
+    try {
+      const roles = localStorage.getItem(this.rolesKey);
+      if (roles) {
+        const parsed = JSON.parse(roles);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      console.warn('⚠️ Error al parsear roles de localStorage:', e);
+    }
+
+    // 🧩 Fallback: intentar decodificar desde el token (por si roles no se guardaron)
+    const token = this.getToken();
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.roles || payload.authorities || [];
+      } catch (err) {
+        console.warn('⚠️ No se pudo decodificar el token:', err);
+      }
+    }
+
+    return [];
   }
 
   /** 👑 Verifica si el usuario es ADMIN */
   isAdmin(): boolean {
     const roles = this.getRoles();
-    return roles.includes('ADMIN') || roles.includes('ROLE_ADMIN');
+    // normaliza todos los roles a mayúsculas y busca la palabra ADMIN en cualquiera
+    return roles.some(r => r.toUpperCase().includes('ADMIN'));
   }
 
   /** ⚙️ Verifica si hay sesión válida */

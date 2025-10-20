@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import {Router, RouterLink} from '@angular/router';
 import { JournalEntryService } from '../../core/service/journal-entry.service';
 import { JournalEntryCreateRequest } from '../../core/models/journal-entry.model';
 import { JournalEntryDetail } from '../../core/models/journal-entry-detail.model';
@@ -11,7 +11,7 @@ import { Account } from '../../core/models/account.model';
 @Component({
   selector: 'app-entry-form',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './entry-form.component.html',
   styleUrls: ['./entry-form.component.css']
 })

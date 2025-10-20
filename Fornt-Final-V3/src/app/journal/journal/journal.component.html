@@ -1,0 +1,95 @@
+<div class="container py-3">
+  <div class="mb-3 d-flex justify-content-between align-items-center">
+    <a class="btn btn-dark btn-sm" routerLink="/dashboard">← Dashboard</a>
+    <h5 class="mb-0">📘 Libro Diario</h5>
+    <div></div>
+  </div>
+
+  <div class="card shadow-sm">
+    <div class="card-header bg-dark text-white">
+      <div class="row g-2 align-items-center">
+        <div class="col-auto">
+          <label class="form-label mb-0 me-2">Desde</label>
+        </div>
+        <div class="col-auto">
+          <input class="form-control form-control-sm" type="date" [(ngModel)]="from">
+        </div>
+        <div class="col-auto">
+          <label class="form-label mb-0 mx-2">Hasta</label>
+        </div>
+        <div class="col-auto">
+          <input class="form-control form-control-sm" type="date" [(ngModel)]="to">
+        </div>
+        <div class="col-auto ms-auto">
+          <button class="btn btn-warning btn-sm" (click)="load()" [disabled]="loading">Actualizar</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-body">
+
+      <div *ngIf="loading" class="d-flex align-items-center gap-2 mb-3">
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+        <span>Cargando…</span>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+      <ng-container *ngIf="!loading && !error">
+
+        <div *ngIf="!hasData" class="alert alert-info mb-0">
+          No hay asientos en el rango seleccionado.
+        </div>
+
+        <div *ngIf="hasData" class="table-responsive">
+          <table class="table table-sm table-striped align-middle">
+            <thead class="table-light">
+            <tr>
+              <th style="width: 110px;">Fecha</th>
+              <th style="width: 90px;">Asiento</th>
+              <th>Cuenta / Concepto</th>
+              <th class="text-end" style="width: 140px;">Debe</th>
+              <th class="text-end" style="width: 140px;">Haber</th>
+            </tr>
+            </thead>
+            <tbody>
+            <ng-container *ngFor="let e of data!.entries; trackBy: trackByEntry">
+              <!-- Encabezado del asiento -->
+              <tr class="table-secondary">
+                <td>{{ e.date }}</td>
+                <td>{{ e.period }}-{{ e.number }}</td>
+                <td>
+                  <strong>{{ e.description || '(Sin descripción)' }}</strong>
+                  <span class="text-muted ms-2" *ngIf="e.createdBy">por {{ e.createdBy }}</span>
+                </td>
+                <td class="text-end"><strong>{{ e.totalDebit  | number:'1.2-2' }}</strong></td>
+                <td class="text-end"><strong>{{ e.totalCredit | number:'1.2-2' }}</strong></td>
+              </tr>
+              <!-- Líneas -->
+              <tr *ngFor="let l of e.lines">
+                <td></td>
+                <td class="text-muted">#{{ l.lineNo }}</td>
+                <td>
+                  <span class="text-monospace">{{ l.accountCode }}</span> - {{ l.accountName }}
+                  <span class="text-muted" *ngIf="l.memo"> — {{ l.memo }}</span>
+                </td>
+                <td class="text-end">{{ l.debit  | number:'1.2-2' }}</td>
+                <td class="text-end">{{ l.credit | number:'1.2-2' }}</td>
+              </tr>
+            </ng-container>
+            </tbody>
+            <tfoot>
+            <tr class="table-dark text-white">
+              <th colspan="3" class="text-end">Totales</th>
+              <th class="text-end">{{ data!.totalDebit  | number:'1.2-2' }}</th>
+              <th class="text-end">{{ data!.totalCredit | number:'1.2-2' }}</th>
+            </tr>
+            </tfoot>
+          </table>
+        </div>
+
+      </ng-container>
+
+    </div>
+  </div>
+</div>

@@ -23,7 +23,7 @@ export class DashboardComponent implements OnInit {
   userRole: string = '';
 
   constructor(
-    private auth: AuthService,
+    public auth: AuthService,
     private userService: UserService,
     private accountService: AccountService,
     private router: Router

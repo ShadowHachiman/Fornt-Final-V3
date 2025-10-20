@@ -5,11 +5,12 @@ import { JournalEntryService } from '../../core/service/journal-entry.service';
 import { AccountService } from '../../core/service/account.service';
 import { Account } from '../../core/models/account.model';
 import { LedgerDetail, LedgerResponse } from '../../core/models/ledger-detail.model';
+import {RouterLink} from "@angular/router";
 
 @Component({
   selector: 'app-ledger',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './ledger.component.html',
   styleUrls: ['./ledger.component.css']
 })

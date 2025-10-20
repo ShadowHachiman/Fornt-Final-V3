@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
+import {ActivatedRoute, Router, RouterLink} from '@angular/router';
 import { JournalEntryService } from '../../core/service/journal-entry.service';
 import { JournalEntry } from '../../core/models/journal-entry.model';
 
@@ -8,7 +8,7 @@ import { JournalEntry } from '../../core/models/journal-entry.model';
 @Component({
   selector: 'app-entry-detail',
   standalone: true,
-  imports: [CommonModule],
+    imports: [CommonModule, RouterLink],
   templateUrl: './entry-detail.component.html',
   styleUrls: ['./entry-detail.component.css']
 })
