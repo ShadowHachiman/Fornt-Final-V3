@@ -57,6 +57,13 @@ export class LedgerComponent implements OnInit {
       return;
     }
 
+    // 🚫 Validación: la cuenta elegida debe ser imputable (no una cuenta padre)
+    const selected = this.accounts?.find(a => a.code === this.selectedAccountCode);
+    if (selected && !selected.imputable) {
+      this.error = 'Cuenta incorrecta: seleccioná una cuenta imputable (no una cuenta padre)';
+      return;
+    }
+
     this.loading = true;
     this.error = '';
 
@@ -67,9 +74,13 @@ export class LedgerComponent implements OnInit {
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error cargando libro mayor:', err);
-        this.error = err.message || 'Error cargando libro mayor';
         this.loading = false;
+        // Si el backend devuelve 400/404 por cuenta inválida, mostramos mensaje claro
+        if (err?.status === 400 || err?.status === 404) {
+          this.error = 'Cuenta incorrecta';
+        } else {
+          this.error = 'Error cargando el libro mayor';
+        }
       }
     });
   }
