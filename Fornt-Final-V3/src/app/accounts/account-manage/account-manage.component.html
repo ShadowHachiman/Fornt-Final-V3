@@ -5,15 +5,28 @@
 
 <form class="card" [formGroup]="accountForm" (ngSubmit)="onSubmit()">
   <div class="card-header">
-    <h2>➕ Crear / Gestionar Cuenta</h2>
+    <h2>{{ editingAccount ? '✏️ Editar Cuenta' : '➕ Crear Cuenta' }}</h2>
   </div>
 
   <div class="card-body grid-2">
     <div class="form-group">
       <label>Código *</label>
-      <input type="text" formControlName="code" class="form-control" placeholder="Ej: 110" />
+      <div class="input-group">
+        <input type="text" formControlName="code" class="form-control" placeholder="Ej: 110"
+               [class.is-invalid]="codeControl?.touched && (codeControl?.invalid || codeValidationError)" />
+        <button type="button" class="btn btn-outline-secondary" (click)="suggestCode()"
+                title="Generar código automáticamente">
+          🔄 Auto
+        </button>
+      </div>
       <small class="text-danger" *ngIf="codeControl?.touched && codeControl?.invalid">
-        Ingresá un código numérico.
+        Ingresá un código numérico (máx. 8 dígitos).
+      </small>
+      <small class="text-danger" *ngIf="codeValidationError">
+        ⚠️ {{ codeValidationError }}
+      </small>
+      <small class="text-muted" *ngIf="!codeValidationError && accountForm.get('type')?.value">
+        💡 Debe comenzar con {{ getTypePrefixHint() }}
       </small>
     </div>
 
@@ -48,7 +61,12 @@
           {{ p.code }} - {{ p.name }}
         </option>
       </select>
-      <small class="text-muted">Solo se listan cuentas activas y no imputables.</small>
+      <small class="text-muted">
+        Solo se listan cuentas del mismo tipo, activas y no imputables.
+        <span *ngIf="parentAccounts.length === 0" class="text-warning">
+          ⚠️ No hay cuentas padre disponibles para este tipo.
+        </span>
+      </small>
     </div>
 
     <div class="form-group">
@@ -60,10 +78,82 @@
   </div>
 
   <div class="card-footer">
-    <button class="btn btn-success" type="submit" [disabled]="loading || accountForm.invalid">💾 Guardar</button>
-    <button class="btn btn-secondary" type="button" (click)="cancel()">✖ Cancelar</button>
+    <button class="btn btn-success" type="submit"
+            [disabled]="loading || accountForm.invalid || codeValidationError">
+      💾 {{ editingAccount ? 'Actualizar' : 'Guardar' }}
+    </button>
+    <button class="btn btn-secondary" type="button" (click)="editingAccount ? cancelEdit() : cancel()">
+      {{ editingAccount ? '🔙 Cancelar Edición' : '✖ Volver' }}
+    </button>
   </div>
 
   <div *ngIf="message" class="alert alert-success mt-2">{{ message }}</div>
   <div *ngIf="error" class="alert alert-danger mt-2">{{ error }}</div>
 </form>
+
+<!-- Listado de cuentas existentes -->
+<div class="card mt-4">
+  <div class="card-header">
+    <h3>📋 Cuentas Existentes</h3>
+    <input type="text" class="form-control mt-2" placeholder="🔍 Buscar por código, nombre o tipo..."
+           [(ngModel)]="searchTerm" />
+  </div>
+
+  <div class="card-body" style="max-height: 500px; overflow-y: auto;">
+    <div *ngIf="loadingAccounts" class="text-center">
+      <p>Cargando cuentas...</p>
+    </div>
+
+    <table class="table table-sm table-hover" *ngIf="!loadingAccounts">
+      <thead class="table-light">
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Tipo</th>
+          <th>Imputable</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let account of filteredAccounts"
+            [class.table-secondary]="!account.active">
+          <td>{{ account.code }}</td>
+          <td>{{ account.name }}</td>
+          <td>
+            <span class="badge bg-secondary">{{ account.type }}</span>
+          </td>
+          <td>
+            <span *ngIf="account.imputable" class="badge bg-success">✓ Sí</span>
+            <span *ngIf="!account.imputable" class="badge bg-secondary">✗ No</span>
+          </td>
+          <td>
+            <span *ngIf="account.active" class="badge bg-success">Activa</span>
+            <span *ngIf="!account.active" class="badge bg-warning">Inactiva</span>
+          </td>
+          <td>
+            <div class="btn-group btn-group-sm" role="group">
+              <button class="btn btn-primary" (click)="editAccount(account)" title="Editar">
+                ✏️
+              </button>
+              <button class="btn"
+                      [class.btn-warning]="account.active"
+                      [class.btn-success]="!account.active"
+                      (click)="toggleStatus(account)"
+                      [title]="account.active ? 'Desactivar' : 'Activar'">
+                {{ account.active ? '🔒' : '🔓' }}
+              </button>
+              <button class="btn btn-danger" (click)="deleteAccount(account)" title="Eliminar">
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!loadingAccounts && filteredAccounts.length === 0" class="alert alert-info">
+      No se encontraron cuentas{{ searchTerm ? ' que coincidan con "' + searchTerm + '"' : '' }}.
+    </div>
+  </div>
+</div>
