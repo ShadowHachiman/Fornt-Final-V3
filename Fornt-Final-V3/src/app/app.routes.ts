@@ -45,7 +45,7 @@ export const routes: Routes = [
   },
 
   // 📘 Asientos contables
-  { path: 'entries/new', component: EntryFormComponent, canActivate: [adminGuard] },
+  { path: 'entries/new', component: EntryFormComponent, canActivate: [authGuard] },
   { path: 'entries/:id', component: EntryDetailComponent, canActivate: [authGuard] },
 
   // 📒 Libro Mayor

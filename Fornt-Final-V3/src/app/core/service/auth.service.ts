@@ -137,6 +137,12 @@ export class AuthService {
     return roles.some(r => r.toUpperCase().includes('ADMIN'));
   }
 
+  /** verifica si el usuario es usuario*/
+  isUser(): boolean {
+    const roles = this.getRoles();
+    return roles.some(r => r.toUpperCase().includes('USER'));
+  }
+
   /** ⚙️ Verifica si hay sesión válida */
   isAuthenticated(): boolean {
     if (!this.isBrowser()) return false;

@@ -43,6 +43,9 @@ export class DashboardComponent implements OnInit {
     return this.auth.isAdmin();
   }
 
+  /** 🔒 Verifica si el usuario logueado es USER */
+  isUser(): boolean { return this.auth.isUser(); }
+
   private loadDashboardData(): void {
     this.loading = true;
 
