@@ -30,6 +30,11 @@
           </a>
         </li>
         <li class="nav-item" *ngIf="isAdmin() || isUser()">
+          <a class="nav-link" routerLink="/journa" routerLinkActive="active">
+            📘 Libro Diario
+          </a>
+        </li>
+        <li class="nav-item" *ngIf="isAdmin() || isUser()">
           <a class="nav-link" routerLink="/entries/new" routerLinkActive="active">
             ➕ Nuevo Asiento
           </a>
@@ -89,7 +94,7 @@
       </div>
     </div>
 
-    <div class="col-md-4">
+    <div *ngIf="isAdmin()" class="col-md-4">
       <div class="card text-bg-warning shadow-sm">
         <div class="card-body text-center">
           <h5 class="card-title">Usuarios registrados</h5>
