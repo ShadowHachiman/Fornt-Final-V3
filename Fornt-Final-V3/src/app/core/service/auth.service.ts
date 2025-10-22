@@ -130,17 +130,22 @@ export class AuthService {
     return [];
   }
 
-  /** 👑 Verifica si el usuario es ADMIN */
+  /** 👑 Verifica si el usuario es ADMIN (acepta "ADMIN" o "ROLE_ADMIN") */
   isAdmin(): boolean {
     const roles = this.getRoles();
-    // normaliza todos los roles a mayúsculas y busca la palabra ADMIN en cualquiera
-    return roles.some(r => r.toUpperCase().includes('ADMIN'));
+    return roles.some(r => {
+      const roleUpper = r.toUpperCase();
+      return roleUpper === 'ADMIN' || roleUpper === 'ROLE_ADMIN';
+    });
   }
 
-  /** verifica si el usuario es usuario*/
+  /** 👤 Verifica si el usuario es USER (acepta "USER" o "ROLE_USER") */
   isUser(): boolean {
     const roles = this.getRoles();
-    return roles.some(r => r.toUpperCase().includes('USER'));
+    return roles.some(r => {
+      const roleUpper = r.toUpperCase();
+      return roleUpper === 'USER' || roleUpper === 'ROLE_USER';
+    });
   }
 
   /** ⚙️ Verifica si hay sesión válida */
