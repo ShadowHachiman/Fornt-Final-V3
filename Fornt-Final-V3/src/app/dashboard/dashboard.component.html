@@ -30,7 +30,7 @@
           </a>
         </li>
         <li class="nav-item" *ngIf="isAdmin() || isUser()">
-          <a class="nav-link" routerLink="/journa" routerLinkActive="active">
+          <a class="nav-link" routerLink="/journal" routerLinkActive="active">
             📘 Libro Diario
           </a>
         </li>
@@ -76,28 +76,19 @@
   </div>
 
   <div class="row g-4 justify-content-center">
-    <div class="col-md-4">
+    <div class="col-md-6">
       <div class="card text-bg-primary shadow-sm">
         <div class="card-body text-center">
-          <h5 class="card-title">Total de cuentas</h5>
+          <h5 class="card-title">💼 Total de cuentas</h5>
           <p class="display-6 fw-bold">{{ totalAccounts }}</p>
         </div>
       </div>
     </div>
 
-    <div class="col-md-4">
-      <div class="card text-bg-success shadow-sm">
-        <div class="card-body text-center">
-          <h5 class="card-title">Cuentas activas</h5>
-          <p class="display-6 fw-bold">{{ activeAccounts }}</p>
-        </div>
-      </div>
-    </div>
-
-    <div *ngIf="isAdmin()" class="col-md-4">
+    <div *ngIf="isAdmin()" class="col-md-6">
       <div class="card text-bg-warning shadow-sm">
         <div class="card-body text-center">
-          <h5 class="card-title">Usuarios registrados</h5>
+          <h5 class="card-title">👥 Usuarios registrados</h5>
           <p class="display-6 fw-bold">{{ totalUsers }}</p>
         </div>
       </div>
