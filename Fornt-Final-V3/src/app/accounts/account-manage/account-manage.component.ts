@@ -237,7 +237,7 @@ export class AccountManageComponent implements OnInit {
 
   /**
    * Filtra las cuentas padre según el tipo seleccionado
-   * Solo muestra cuentas del mismo tipo, no imputables y activas
+   * Solo muestra cuentas del mismo tipo y no imputables
    */
   filterParentAccounts(): void {
     const selectedType = this.accountForm.get('type')?.value;
@@ -252,7 +252,6 @@ export class AccountManageComponent implements OnInit {
       const normalizeType = (t: string) => (t === 'INCOME' || t === 'REVENUE') ? 'INCOME' : t;
 
       return !a.imputable &&
-             a.active &&
              normalizeType(a.type) === normalizeType(selectedType);
     });
   }
@@ -468,28 +467,6 @@ export class AccountManageComponent implements OnInit {
       imputable: false,
       parentCode: null,
       balanceNature: this.computeNature('ASSET')
-    });
-  }
-
-  /**
-   * Activa/Desactiva una cuenta
-   */
-  toggleStatus(account: Account): void {
-    const newStatus = !account.active;
-    const action = newStatus ? 'activar' : 'desactivar';
-
-    if (!confirm(`¿Está seguro que desea ${action} la cuenta "${account.code} - ${account.name}"?`)) {
-      return;
-    }
-
-    this.accountService.toggleAccountStatus(account.id, newStatus).subscribe({
-      next: () => {
-        this.message = `✅ Cuenta ${newStatus ? 'activada' : 'desactivada'}: ${account.code} - ${account.name}`;
-        this.loadAccounts();
-      },
-      error: (err) => {
-        this.error = err?.message || `Error al ${action} la cuenta`;
-      }
     });
   }
 

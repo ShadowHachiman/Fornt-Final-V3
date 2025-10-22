@@ -38,4 +38,9 @@ export class JournalEntryService {
 
     return this.http.get<LedgerResponse>(`${environment.apiUrl}/ledger`, { params });
   }
+
+  /** 📅 Obtener el último asiento registrado (para validar fechas) */
+  getLastEntry(): Observable<JournalEntry | null> {
+    return this.http.get<JournalEntry | null>(`${this.apiUrl}/last`);
+  }
 }

@@ -17,8 +17,16 @@
               class="form-control"
               [(ngModel)]="entry.date"
               name="date"
+              [min]="minDate || ''"
+              [max]="maxDate"
               required
             />
+            <small class="text-muted" *ngIf="lastEntryDate">
+              📅 Último asiento: {{ formatDate(lastEntryDate) }}
+            </small>
+            <small class="text-muted" *ngIf="!lastEntryDate">
+              📅 No hay asientos previos
+            </small>
           </div>
           <div class="col-md-9">
             <label class="form-label fw-bold">Descripción *</label>
@@ -167,6 +175,7 @@
   <div class="alert alert-info mt-4">
     <h6 class="fw-bold">💡 Ayuda:</h6>
     <ul class="mb-0">
+      <li><strong>📅 Fecha:</strong> No se pueden registrar asientos a futuro ni con fecha anterior al último asiento</li>
       <li>Solo se muestran cuentas <strong>imputables</strong> y <strong>activas</strong></li>
       <li>Cada línea debe tener monto en <strong>Debe</strong> o en <strong>Haber</strong>, no en ambos</li>
       <li>El total de <strong>Debe</strong> debe ser igual al total de <strong>Haber</strong></li>

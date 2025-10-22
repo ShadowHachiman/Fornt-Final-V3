@@ -62,7 +62,7 @@
         </option>
       </select>
       <small class="text-muted">
-        Solo se listan cuentas del mismo tipo, activas y no imputables.
+        Solo se listan cuentas del mismo tipo y no imputables.
         <span *ngIf="parentAccounts.length === 0" class="text-warning">
           ⚠️ No hay cuentas padre disponibles para este tipo.
         </span>
@@ -111,13 +111,11 @@
           <th>Nombre</th>
           <th>Tipo</th>
           <th>Imputable</th>
-          <th>Estado</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let account of filteredAccounts"
-            [class.table-secondary]="!account.active">
+        <tr *ngFor="let account of filteredAccounts">
           <td>{{ account.code }}</td>
           <td>{{ account.name }}</td>
           <td>
@@ -128,23 +126,12 @@
             <span *ngIf="!account.imputable" class="badge bg-secondary">✗ No</span>
           </td>
           <td>
-            <span *ngIf="account.active" class="badge bg-success">Activa</span>
-            <span *ngIf="!account.active" class="badge bg-warning">Inactiva</span>
-          </td>
-          <td>
             <div class="btn-group btn-group-sm" role="group">
-              <button class="btn btn-primary" (click)="editAccount(account)" title="Editar">
-                ✏️
+              <button class="btn btn-primary" (click)="editAccount(account)" title="Editar cuenta">
+                ✏️ Editar
               </button>
-              <button class="btn"
-                      [class.btn-warning]="account.active"
-                      [class.btn-success]="!account.active"
-                      (click)="toggleStatus(account)"
-                      [title]="account.active ? 'Desactivar' : 'Activar'">
-                {{ account.active ? '🔒' : '🔓' }}
-              </button>
-              <button class="btn btn-danger" (click)="deleteAccount(account)" title="Eliminar">
-                🗑️
+              <button class="btn btn-danger" (click)="deleteAccount(account)" title="Eliminar cuenta">
+                🗑️ Eliminar
               </button>
             </div>
           </td>

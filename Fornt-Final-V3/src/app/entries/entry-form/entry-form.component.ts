@@ -17,7 +17,7 @@ import { Account } from '../../core/models/account.model';
 })
 export class EntryFormComponent implements OnInit {
   entry: JournalEntryCreateRequest = {
-    date: new Date().toISOString().substring(0, 10),
+    date: '',
     description: '',
     lines: []
   };
@@ -27,6 +27,9 @@ export class EntryFormComponent implements OnInit {
   error = '';
   success = '';
   loading = false;
+  lastEntryDate: string | null = null;
+  maxDate: string = this.getTodayInArgentina(); // Fecha máxima: hoy en Argentina
+  minDate: string | null = null; // Fecha mínima: último asiento
 
   constructor(
     private entryService: JournalEntryService,
@@ -35,7 +38,9 @@ export class EntryFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.entry.date = this.getTodayInArgentina();
     this.loadAccounts();
+    this.loadLastEntryDate();
   }
 
   loadAccounts(): void {
@@ -46,6 +51,22 @@ export class EntryFormComponent implements OnInit {
         this.imputables = data.filter(a => a.imputable && a.active);
       },
       error: () => (this.error = 'Error cargando cuentas')
+    });
+  }
+
+  loadLastEntryDate(): void {
+    this.entryService.getLastEntry().subscribe({
+      next: (lastEntry) => {
+        if (lastEntry && lastEntry.date) {
+          this.lastEntryDate = lastEntry.date;
+          this.minDate = lastEntry.date;
+        }
+      },
+      error: (err) => {
+        console.warn('No se pudo obtener el último asiento:', err);
+        // Si no hay último asiento, no hay restricción mínima
+        this.minDate = null;
+      }
     });
   }
 
@@ -102,6 +123,25 @@ export class EntryFormComponent implements OnInit {
       return;
     }
 
+    // Validar que la fecha no sea futura (usando hora de Argentina)
+    const entryDate = new Date(this.entry.date + 'T00:00:00');
+    const todayArgentina = this.getTodayDateInArgentina();
+
+    if (entryDate > todayArgentina) {
+      this.error = '❌ No se puede registrar un asiento con fecha futura';
+      return;
+    }
+
+    // Validar que la fecha no sea anterior al último asiento
+    if (this.lastEntryDate) {
+      const lastDate = new Date(this.lastEntryDate + 'T00:00:00');
+
+      if (entryDate < lastDate) {
+        this.error = `❌ La fecha del asiento no puede ser anterior al último asiento registrado (${this.formatDate(this.lastEntryDate)})`;
+        return;
+      }
+    }
+
     if (!this.entry.description?.trim()) {
       this.error = 'La descripción es requerida';
       return;
@@ -142,5 +182,37 @@ export class EntryFormComponent implements OnInit {
 
   cancel(): void {
     this.router.navigate(['/dashboard']);
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString + 'T00:00:00');
+    return date.toLocaleDateString('es-AR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+  }
+
+  /**
+   * Obtiene la fecha actual en Argentina en formato YYYY-MM-DD
+   */
+  getTodayInArgentina(): string {
+    const now = new Date();
+    // Convertir a hora de Argentina (UTC-3)
+    const argentinaDate = new Date(now.toLocaleString('en-US', { timeZone: 'America/Argentina/Buenos_Aires' }));
+
+    const year = argentinaDate.getFullYear();
+    const month = String(argentinaDate.getMonth() + 1).padStart(2, '0');
+    const day = String(argentinaDate.getDate()).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+  }
+
+  /**
+   * Obtiene el objeto Date de hoy en Argentina a las 00:00:00
+   */
+  getTodayDateInArgentina(): Date {
+    const todayStr = this.getTodayInArgentina();
+    return new Date(todayStr + 'T00:00:00');
   }
 }
