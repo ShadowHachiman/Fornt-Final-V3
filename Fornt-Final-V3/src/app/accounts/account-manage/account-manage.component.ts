@@ -237,7 +237,7 @@ export class AccountManageComponent implements OnInit {
 
   /**
    * Filtra las cuentas padre según el tipo seleccionado
-   * Solo muestra cuentas del mismo tipo, no imputables y activas
+   * Solo muestra cuentas del mismo tipo y no imputables
    */
   filterParentAccounts(): void {
     const selectedType = this.accountForm.get('type')?.value;
@@ -252,7 +252,6 @@ export class AccountManageComponent implements OnInit {
       const normalizeType = (t: string) => (t === 'INCOME' || t === 'REVENUE') ? 'INCOME' : t;
 
       return !a.imputable &&
-             a.active &&
              normalizeType(a.type) === normalizeType(selectedType);
     });
   }
@@ -472,32 +471,14 @@ export class AccountManageComponent implements OnInit {
   }
 
   /**
-   * Activa/Desactiva una cuenta
-   */
-  toggleStatus(account: Account): void {
-    const newStatus = !account.active;
-    const action = newStatus ? 'activar' : 'desactivar';
-
-    if (!confirm(`¿Está seguro que desea ${action} la cuenta "${account.code} - ${account.name}"?`)) {
-      return;
-    }
-
-    this.accountService.toggleAccountStatus(account.id, newStatus).subscribe({
-      next: () => {
-        this.message = `✅ Cuenta ${newStatus ? 'activada' : 'desactivada'}: ${account.code} - ${account.name}`;
-        this.loadAccounts();
-      },
-      error: (err) => {
-        this.error = err?.message || `Error al ${action} la cuenta`;
-      }
-    });
-  }
-
-  /**
    * Elimina una cuenta
    */
   deleteAccount(account: Account): void {
-    if (!confirm(`⚠️ ¿Está seguro que desea ELIMINAR la cuenta "${account.code} - ${account.name}"?\n\nEsta acción no se puede deshacer.`)) {
+    const confirmMessage = `⚠️ ¿Está seguro que desea ELIMINAR la cuenta "${account.code} - ${account.name}"?\n\n` +
+      `Esta acción no se puede deshacer.\n\n` +
+      `Nota: Solo puede eliminar cuentas sin subcuentas ni movimientos.`;
+
+    if (!confirm(confirmMessage)) {
       return;
     }
 
@@ -507,7 +488,30 @@ export class AccountManageComponent implements OnInit {
         this.loadAccounts();
       },
       error: (err) => {
-        this.error = err?.message || 'Error al eliminar la cuenta';
+        // Manejar diferentes tipos de errores
+        let errorMsg = 'Error al eliminar la cuenta';
+
+        if (err?.status === 400) {
+          // Error de validación del backend
+          errorMsg = err.message || '❌ No se puede eliminar: la cuenta tiene subcuentas o movimientos en asientos';
+        } else if (err?.status === 401) {
+          // 401 puede ser por sesión expirada O por problema de roles en el backend
+          errorMsg = '❌ No se puede eliminar la cuenta. Posibles causas:\n' +
+                     '• La cuenta tiene subcuentas activas\n' +
+                     '• La cuenta tiene movimientos en asientos contables\n' +
+                     '• Problema de permisos (contacte al administrador del sistema)';
+        } else if (err?.status === 403) {
+          errorMsg = '⚠️ No tiene permisos para eliminar cuentas. Se requiere rol ADMIN.';
+        } else if (err?.status === 409) {
+          errorMsg = '❌ No se puede eliminar: la cuenta está siendo utilizada por otros recursos.';
+        } else if (err?.message) {
+          errorMsg = err.message;
+        }
+
+        this.error = errorMsg;
+        console.error('❌ Error al eliminar cuenta:', err);
+        console.error('   Status:', err?.status);
+        console.error('   Message:', err?.message);
       }
     });
   }

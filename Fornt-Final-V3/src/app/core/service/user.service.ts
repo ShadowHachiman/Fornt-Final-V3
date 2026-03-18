@@ -23,16 +23,26 @@ export class UserService {
 
   /** ➕ Crear nuevo usuario (ADMIN) */
   createUser(formValue: any) {
-    // Si tu formulario trae "roles" como ["ADMIN"] o vacío:
-    const roles = Array.isArray(formValue?.roles) && formValue.roles.length
-      ? formValue.roles
-      : ['ROLE_USER'];
+    // El formulario envía "role" (singular) como "ADMIN" o "USER"
+    // Lo convertimos a un array para el backend
+    let roles: string[];
+
+    if (formValue?.role) {
+      // Si viene "role" (singular), convertirlo a array
+      roles = [formValue.role]; // ["ADMIN"] o ["USER"]
+    } else if (Array.isArray(formValue?.roles) && formValue.roles.length) {
+      // Si viene "roles" (plural) como array, usarlo
+      roles = formValue.roles;
+    } else {
+      // Fallback: usuario normal
+      roles = ['USER'];
+    }
 
     const payload = {
       username: formValue.username,
       password: formValue.password,
       email: formValue.email,
-      roles,             // puede ser ["ADMIN"] o ["ROLE_ADMIN"] — el back normaliza
+      roles,             // ["ADMIN"] o ["USER"]
       active: formValue.active ?? true
     };
 

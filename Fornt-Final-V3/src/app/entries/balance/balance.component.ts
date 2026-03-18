@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { BalanceService } from '../../core/service/balance.service';
-import { BalanceReport } from '../../core/models/balance-report.model';
+import { BalanceReport, BalanceRangeReport } from '../../core/models/balance-report.model';
 
 @Component({
   selector: 'app-balance',
@@ -14,9 +14,17 @@ import { BalanceReport } from '../../core/models/balance-report.model';
 })
 export class BalanceComponent implements OnInit {
   balanceReport?: BalanceReport;
+  balanceRangeReport?: BalanceRangeReport;
 
-  // fecha local (evita desfase por UTC)
+  // Modo: 'asOf' o 'range'
+  mode: 'asOf' | 'range' = 'range';
+
+  // Fecha única (modo asOf)
   asOf: string = this.todayLocalISO();
+
+  // Rango de fechas (modo range)
+  fromDate: string = this.getFirstDayOfMonth();
+  toDate: string = this.todayLocalISO();
 
   loading = false;
   error = '';
@@ -33,24 +41,55 @@ export class BalanceComponent implements OnInit {
   }
 
   loadBalance(): void {
-    if (!this.asOf) {
-      this.error = 'Debe seleccionar una fecha';
-      return;
-    }
     this.loading = true;
     this.error = '';
 
-    this.balanceService.getBalanceAsOf(this.asOf).subscribe({
-      next: (data) => {
-        this.balanceReport = data;
+    if (this.mode === 'asOf') {
+      if (!this.asOf) {
+        this.error = 'Debe seleccionar una fecha';
         this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error cargando balance:', err);
-        this.error = err?.message || 'Error cargando balance';
-        this.loading = false;
+        return;
       }
-    });
+
+      this.balanceService.getBalanceAsOf(this.asOf).subscribe({
+        next: (data) => {
+          this.balanceReport = data;
+          this.balanceRangeReport = undefined; // Limpiar el reporte de rango
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Error cargando balance:', err);
+          this.error = err?.message || 'Error cargando balance';
+          this.loading = false;
+        }
+      });
+    } else {
+      // mode === 'range'
+      if (!this.fromDate || !this.toDate) {
+        this.error = 'Debe seleccionar ambas fechas';
+        this.loading = false;
+        return;
+      }
+
+      if (this.fromDate > this.toDate) {
+        this.error = 'La fecha "Desde" debe ser anterior a "Hasta"';
+        this.loading = false;
+        return;
+      }
+
+      this.balanceService.getBalanceRange(this.fromDate, this.toDate).subscribe({
+        next: (data) => {
+          this.balanceRangeReport = data;
+          this.balanceReport = undefined; // Limpiar el reporte simple
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('Error cargando balance:', err);
+          this.error = err?.message || 'Error cargando balance';
+          this.loading = false;
+        }
+      });
+    }
   }
 
   // Getters “seguros”
@@ -65,6 +104,13 @@ export class BalanceComponent implements OnInit {
 
   private todayLocalISO(): string {
     const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
+  }
+
+  private getFirstDayOfMonth(): string {
+    const d = new Date();
+    d.setDate(1); // Primer día del mes actual
     d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
     return d.toISOString().slice(0, 10);
   }

@@ -29,13 +29,26 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
           break;
 
         case 401: // Unauthorized - Token inválido o expirado
-          // Si es 401, el token realmente es inválido/expirado → logout
           errorMessage = 'Sesión expirada. Por favor inicie sesión nuevamente.';
-          console.error('🔒 Unauthorized - token inválido:', error.message);
-          authService.logout();
-          router.navigate(['/login'], {
-            queryParams: { returnUrl: router.url }
-          });
+          console.error('🔒 Unauthorized - token inválido:', error.message, 'URL:', req.url);
+
+          // ⚠️ NO hacer logout automático si el 401 puede ser un error del backend
+          // relacionado con roles (ROLE_ADMIN vs ADMIN) o validaciones incorrectas
+          // Solo hacer logout si es el endpoint de login o si no hay token
+          const isLoginEndpoint = req.url.includes('/auth/login');
+          const hasToken = !!authService.getToken();
+          const shouldAutoLogout = isLoginEndpoint || !hasToken;
+
+          if (shouldAutoLogout) {
+            console.warn('🔒 Logout automático: token ausente o endpoint de login');
+            authService.logout();
+            router.navigate(['/login'], {
+              queryParams: { returnUrl: router.url }
+            });
+          } else {
+            // Dejar que el componente maneje el error (puede ser error del backend)
+            console.warn('⚠️ 401 recibido pero hay token presente - puede ser problema de roles en el backend');
+          }
           break;
 
         case 403: // Forbidden - Sin permisos

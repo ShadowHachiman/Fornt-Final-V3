@@ -17,7 +17,6 @@ import { CommonModule } from "@angular/common";
 export class DashboardComponent implements OnInit {
   user?: User;
   totalAccounts: number = 0;
-  activeAccounts: number = 0;
   totalUsers: number = 0;
   loading: boolean = true;
   userRole: string = '';
@@ -59,7 +58,6 @@ export class DashboardComponent implements OnInit {
     this.accountService.getAllAccounts().subscribe({
       next: (accounts: Account[]) => {
         this.totalAccounts = accounts.length;
-        this.activeAccounts = accounts.filter((a) => a.active).length;
 
         // Si no es admin, terminamos la carga aquí
         if (!this.isAdmin()) {

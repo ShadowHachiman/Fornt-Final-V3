@@ -6,13 +6,40 @@
   </div>
 
   <div class="card shadow-sm">
-    <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-      <h5 class="mb-0">📊 Balance General</h5>
-      <div class="d-flex gap-2">
-        <input type="date" class="form-control form-control-sm" style="min-width: 180px"
-               [(ngModel)]="asOf" (change)="onDateChange()">
+    <div class="card-header bg-dark text-white">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0">📊 Balance General</h5>
+        <div class="btn-group btn-group-sm" role="group">
+          <input type="radio" class="btn-check" name="mode" id="modeRange" value="range" [(ngModel)]="mode" (change)="loadBalance()">
+          <label class="btn btn-outline-light" for="modeRange">Rango</label>
+
+          <input type="radio" class="btn-check" name="mode" id="modeAsOf" value="asOf" [(ngModel)]="mode" (change)="loadBalance()">
+          <label class="btn btn-outline-light" for="modeAsOf">Fecha única</label>
+        </div>
+      </div>
+
+      <!-- Filtros según modo -->
+      <div class="d-flex gap-2 align-items-center">
+        <!-- Modo: Rango de fechas -->
+        <ng-container *ngIf="mode === 'range'">
+          <label class="text-white-50 small mb-0">Desde:</label>
+          <input type="date" class="form-control form-control-sm" style="min-width: 150px"
+                 [(ngModel)]="fromDate">
+          <label class="text-white-50 small mb-0">Hasta:</label>
+          <input type="date" class="form-control form-control-sm" style="min-width: 150px"
+                 [(ngModel)]="toDate">
+        </ng-container>
+
+        <!-- Modo: Fecha única -->
+        <ng-container *ngIf="mode === 'asOf'">
+          <label class="text-white-50 small mb-0">Al:</label>
+          <input type="date" class="form-control form-control-sm" style="min-width: 180px"
+                 [(ngModel)]="asOf">
+        </ng-container>
+
         <button class="btn btn-warning btn-sm" (click)="loadBalance()" [disabled]="loading">
-          Actualizar
+          <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+          Consultar
         </button>
       </div>
     </div>
@@ -27,8 +54,8 @@
 
       <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-      <!-- Contenido -->
-      <ng-container *ngIf="!loading && !error && balanceReport">
+      <!-- Contenido: Balance simple (fecha única) -->
+      <ng-container *ngIf="!loading && !error && balanceReport && !balanceRangeReport">
 
         <div class="row g-3">
           <!-- Balance General -->
@@ -108,6 +135,79 @@
         </div>
 
       </ng-container>
+
+      <!-- Contenido: Balance de rango (desde-hasta) -->
+      <ng-container *ngIf="!loading && !error && balanceRangeReport">
+        <div class="row g-3">
+
+          <!-- Saldo de Apertura -->
+          <div class="col-lg-4">
+            <div class="card border-0">
+              <div class="card-header bg-secondary text-white">
+                🔓 Apertura ({{ balanceRangeReport.opening.asOf | date: 'dd/MM/yyyy' }})
+              </div>
+              <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr><th>Activos:</th><td class="text-end">{{ balanceRangeReport.opening.assets | number:'1.2-2' }}</td></tr>
+                    <tr><th>Pasivos:</th><td class="text-end">{{ balanceRangeReport.opening.liabilities | number:'1.2-2' }}</td></tr>
+                    <tr><th>Patrimonio:</th><td class="text-end">{{ balanceRangeReport.opening.equity | number:'1.2-2' }}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Movimientos del Período -->
+          <div class="col-lg-4">
+            <div class="card border-0">
+              <div class="card-header bg-info text-white">
+                📊 Período ({{ balanceRangeReport.from | date: 'dd/MM/yyyy' }} - {{ balanceRangeReport.to | date: 'dd/MM/yyyy' }})
+              </div>
+              <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr><th>Activos:</th><td class="text-end">{{ balanceRangeReport.periodAssets | number:'1.2-2' }}</td></tr>
+                    <tr><th>Pasivos:</th><td class="text-end">{{ balanceRangeReport.periodLiabilities | number:'1.2-2' }}</td></tr>
+                    <tr><th>Patrimonio:</th><td class="text-end">{{ balanceRangeReport.periodEquity | number:'1.2-2' }}</td></tr>
+                    <tr class="table-light"><th>Ingresos:</th><td class="text-end text-success">{{ balanceRangeReport.periodIncome | number:'1.2-2' }}</td></tr>
+                    <tr class="table-light"><th>Egresos:</th><td class="text-end text-danger">{{ balanceRangeReport.periodExpense | number:'1.2-2' }}</td></tr>
+                    <tr class="table-secondary"><th>Resultado:</th><td class="text-end"><strong>{{ balanceRangeReport.periodResult | number:'1.2-2' }}</strong></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Saldo de Cierre -->
+          <div class="col-lg-4">
+            <div class="card border-0">
+              <div class="card-header bg-success text-white">
+                🔒 Cierre ({{ balanceRangeReport.closing.asOf | date: 'dd/MM/yyyy' }})
+              </div>
+              <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                  <tbody>
+                    <tr><th>Activos:</th><td class="text-end">{{ balanceRangeReport.closing.assets | number:'1.2-2' }}</td></tr>
+                    <tr><th>Pasivos:</th><td class="text-end">{{ balanceRangeReport.closing.liabilities | number:'1.2-2' }}</td></tr>
+                    <tr><th>Patrimonio:</th><td class="text-end">{{ balanceRangeReport.closing.equity | number:'1.2-2' }}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="card-footer">
+                <div class="alert mb-0"
+                     [ngClass]="balanceRangeReport.closing.balanced ? 'alert-success' : 'alert-warning'">
+                  <strong>{{ balanceRangeReport.closing.balanced ? '✅ Balanceado' : '⚠️ Desbalanceado' }}</strong>
+                  <br>
+                  <small>Diferencia: {{ balanceRangeReport.closing.difference | number:'1.2-2' }}</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </ng-container>
+
     </div>
   </div>
 </div>
